@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+/build/
+/dist/
+*.rpm
+*.tar.gz
+*.so
+/.agents/
+/.aws/
+/.codex/
+/OWG_screenshot.png
+/docs/evidence/
+.pytest_cache/

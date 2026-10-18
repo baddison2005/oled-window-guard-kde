@@ -1,0 +1,327 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OLED Window Guard settings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "default": 1
+    },
+    "paused": {
+      "type": "boolean",
+      "default": true
+    },
+    "movementDisplays": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "dimmingDisplays": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "intervalMinutes": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 240,
+      "default": 10
+    },
+    "warningSeconds": {
+      "type": "number",
+      "minimum": 3,
+      "maximum": 60,
+      "default": 10
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "drift",
+        "swap",
+        "group"
+      ],
+      "default": "drift"
+    },
+    "shiftRangePercent": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10
+    },
+    "maximumWindows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 12,
+      "default": 4
+    },
+    "sizeTolerance": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 0.25,
+      "default": 0.1
+    },
+    "avoidFocusedWindow": {
+      "description": "Legacy compatibility field; idle focused windows now participate subject to interaction grace and final input checks.",
+      "type": "boolean",
+      "default": true
+    },
+    "quietSeconds": {
+      "description": "Initial interaction grace period after the warning is shown, capped at warningSeconds. Later target-display interaction cancels movement.",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 60,
+      "default": 5
+    },
+    "allowTransientOverlap": {
+      "type": "boolean",
+      "default": false
+    },
+    "keepSimilarWindowsTogether": {
+      "type": "boolean",
+      "default": false
+    },
+    "shiftHorizontalOrder": {
+      "type": "boolean",
+      "default": false
+    },
+    "shiftVerticalOrder": {
+      "type": "boolean",
+      "default": false
+    },
+    "soundEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "systemNotifications": {
+      "type": "boolean",
+      "default": false
+    },
+    "groupId": {
+      "type": "string",
+      "default": ""
+    },
+    "rotateGroup": {
+      "type": "boolean",
+      "default": false
+    },
+    "layoutSourceId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "excludedApps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "dimmingExcludedApps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "dimWindows": {
+      "type": "boolean",
+      "default": false
+    },
+    "dimDisplays": {
+      "type": "boolean",
+      "default": false
+    },
+    "windowDimPercent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 90,
+      "default": 30
+    },
+    "displayDimPercent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 90,
+      "default": 40
+    },
+    "windowDimDelay": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 600,
+      "default": 0
+    },
+    "displayDimDelay": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 600,
+      "default": 0
+    },
+    "windowDimFade": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 3,
+      "multipleOf": 0.5,
+      "default": 0
+    },
+    "displayDimFade": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 3,
+      "multipleOf": 0.5,
+      "default": 0
+    },
+    "brightnessShortcutEnabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "movementOverrides": {
+      "type": "object",
+      "default": {},
+      "additionalProperties": {
+        "$ref": "#/$defs/movementOverride"
+      }
+    },
+    "dimmingOverrides": {
+      "type": "object",
+      "default": {},
+      "additionalProperties": {
+        "$ref": "#/$defs/dimmingOverride"
+      }
+    },
+    "desktopClickBehavior": {
+      "type": "string",
+      "enum": [
+        "stay-bright",
+        "restart-timers"
+      ],
+      "default": "stay-bright"
+    },
+    "startMinimized": {
+      "type": "boolean",
+      "default": false
+    },
+    "resumeAfterUnlock": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "$defs": {
+    "movementOverride": {
+      "type": "object",
+      "properties": {
+        "intervalMinutes": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 240
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "drift",
+            "swap",
+            "group"
+          ]
+        },
+        "shiftRangePercent": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "maximumWindows": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "sizeTolerance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.25
+        },
+        "keepSimilarWindowsTogether": {
+          "type": "boolean"
+        },
+        "shiftHorizontalOrder": {
+          "type": "boolean"
+        },
+        "shiftVerticalOrder": {
+          "type": "boolean"
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "rotateGroup": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "dimmingOverride": {
+      "type": "object",
+      "properties": {
+        "windows": {
+          "type": "boolean",
+          "default": true
+        },
+        "display": {
+          "type": "boolean",
+          "default": true
+        },
+        "windowDimPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90
+        },
+        "displayDimPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90
+        },
+        "windowDimDelay": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "displayDimDelay": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "windowDimFade": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3,
+          "multipleOf": 0.5
+        },
+        "displayDimFade": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3,
+          "multipleOf": 0.5
+        },
+        "desktopClickBehavior": {
+          "type": "string",
+          "enum": [
+            "stay-bright",
+            "restart-timers"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "x-consumption": "This JSON Schema is canonical for defaults and validation. Consumers derive defaults from each property default; JavaScript/QML should load this JSON at build/runtime instead of maintaining a second defaults table."
+}

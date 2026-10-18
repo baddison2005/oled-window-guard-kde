@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Application
+Name=OLED Window Guard
+Comment=Manage OLED Window Guard
+Exec=oled-window-guard open
+Icon=oled-window-guard
+Terminal=false
+Categories=Utility;Accessibility;
+StartupNotify=true
+Actions=Start;Pause;RestoreBrightness;
+
+[Desktop Action Start]
+Name=Start guarding
+Exec=oled-window-guard start
+
+[Desktop Action Pause]
+Name=Pause guarding
+Exec=oled-window-guard pause
+
+[Desktop Action RestoreBrightness]
+Name=Restore brightness
+Exec=oled-window-guard restore-brightness

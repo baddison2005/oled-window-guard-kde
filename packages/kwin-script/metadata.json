@@ -1,0 +1,21 @@
+{
+  "KPackageStructure": "KWin/Script",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "Dr. Brett Addison"
+      }
+    ],
+    "Category": "Utilities",
+    "Description": "Safety-gated window movement, layout groups and one-shot Restore",
+    "EnabledByDefault": false,
+    "Icon": "view-list-details",
+    "Id": "oled-window-guard-adapter",
+    "License": "GPL-3.0-or-later",
+    "Name": "OLED Window Guard Adapter",
+    "Version": "1.0.0"
+  },
+  "X-Plasma-API": "declarativescript",
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "X-Plasma-MainScript": "ui/main.qml"
+}

@@ -1,0 +1,33 @@
+"use strict";
+const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm");
+const schema=JSON.parse(fs.readFileSync("schema/settings.schema.json","utf8"));
+const settings=Object.fromEntries(Object.entries(schema.properties).filter(([,p])=>Object.hasOwn(p,"default"))
+    .map(([key,p])=>[key,JSON.parse(JSON.stringify(p.default))]));
+const context={};
+vm.runInNewContext(fs.readFileSync("core/dimming_options.js","utf8").replace(/^\.pragma library\s*/m,"")+
+    "\nthis.api={resolveDimmingOptions};",context);
+const resolve=(s,id)=>JSON.parse(JSON.stringify(context.api.resolveDimmingOptions(s,id)));
+settings.dimmingDisplays=["A"];
+let a=resolve(settings,"A"),b=resolve(settings,"B");
+assert.equal(a.selected,true);
+assert.equal(a.options.windows,false);assert.equal(a.options.display,false);
+assert.equal(b.selected,false);
+settings.dimWindows=true;settings.dimDisplays=true;
+a=resolve(settings,"A");
+assert.equal(a.options.windows,true);assert.equal(a.options.display,true);
+settings.dimmingOverrides={A:{windows:false,displayDimPercent:65,windowDimDelay:7,displayDimFade:1.5}};
+a=resolve(settings,"A");
+assert.equal(a.options.windows,false);assert.equal(a.options.display,true);
+assert.equal(a.options.displayAmount,.65);assert.equal(a.options.windowDelayMs,7000);
+assert.equal(a.options.displayFadeMs,1500);
+assert.equal(resolve(settings,"B").options.display,false);
+settings.dimmingOverrides.A.displayDimPercent=91;
+assert.equal(resolve(settings,"A"),null);
+console.log("core dimming options: tests passed");
+settings.dimmingOverrides.A.displayDimPercent=65;
+settings.desktopClickBehavior='restart-timers';
+assert.equal(resolve(settings,'A').options.desktopClickBehavior,'restart-timers');
+settings.dimmingOverrides.A.desktopClickBehavior='stay-bright';
+assert.equal(resolve(settings,'A').options.desktopClickBehavior,'stay-bright');
+settings.dimmingOverrides.A.desktopClickBehavior='unknown';
+assert.equal(resolve(settings,'A'),null);

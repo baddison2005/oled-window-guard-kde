@@ -1,0 +1,11 @@
+OLED Window Guard KDE
+Copyright (C) 2026 Dr. Brett Addison
+
+The controller/dashboard and compositor are free software under GPLv3-or-later.
+Shared settings schema and protocol definitions use MIT. See LICENSE, NOTICE
+and packaging/licenses/MIT.txt for the full terms and scope.
+
+KWin, Qt, Qt for Python (PySide6), KDE Frameworks and other system dependencies
+retain their own licenses. See packaging/licenses/THIRD_PARTY_NOTICES.md.
+Source and build instructions are included in the corresponding source bundle;
+see SOURCE.md. This application is distributed without warranty.

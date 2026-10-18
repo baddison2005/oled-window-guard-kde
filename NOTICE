@@ -1,0 +1,34 @@
+OLED Window Guard KDE
+Copyright (C) 2026 Dr. Brett Addison
+
+SPDX-License-Identifier: GPL-3.0-or-later
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+Scope: all original KDE project implementation, including the Python
+controller/dashboard, compositor JavaScript/QML, native observer, build and
+installation tools, tests, packaging and KDE copies of the original artwork.
+The settings schema and protocol definitions in schema/ and interfaces/ are
+instead licensed under MIT; their full terms are in packaging/licenses/MIT.txt.
+Third-party dependencies and copied upstream license/attribution notices keep
+their own licenses; see THIRD_PARTY_NOTICES.md and native-header-notices.json
+in packaging/licenses/. Generated workers inherit their original source license.
+
+Historical documents, evidence, downloaded packages and old build artifacts
+record earlier states and do not override this notice or relicense third-party
+works. The earlier evaluation-only KDE proposal is superseded. This adoption
+applies to the KDE project; sibling macOS/Window Layouts repositories are unchanged.
+
+Source builds: see SOURCE.md. Distribute exact corresponding source and build
+instructions with binary releases under the applicable GPL requirements.

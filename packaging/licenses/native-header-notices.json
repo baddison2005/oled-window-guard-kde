@@ -1,0 +1,106 @@
+{
+  "rpmSHA256": "a7b821d2746e84dddea9d1d060a35a9c0f44bd571e97ba29cf96c087ea946501",
+  "headers": [
+    {
+      "header": "input.h",
+      "sha256": "09ab7aa09115570997c2fd33f18e93c948e8e4c2dd9d3ab1f750a9b4d2ae06df",
+      "notices": [
+        "SPDX-FileCopyrightText: 2013 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
+        "SPDX-FileCopyrightText: 2018 Roman Gilg <subdiff@gmail.com>",
+        "SPDX-FileCopyrightText: 2019 Vlad Zahorodnii <vlad.zahorodnii@kde.org>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    },
+    {
+      "header": "input_event.h",
+      "sha256": "4f0151d312c1d86c069ab57bf2faff6fff1ec80f5185c89c3a0d6a7bedb213f2",
+      "notices": [
+        "SPDX-FileCopyrightText: 2016 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    },
+    {
+      "header": "input_event_spy.h",
+      "sha256": "1804f762a80a0b592939c45a70b00d2ddfb84aba0bca213becb82c11d393d348",
+      "notices": [
+        "SPDX-FileCopyrightText: 2016 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    },
+    {
+      "header": "core/output.h",
+      "sha256": "c540dce4e4d9e000742f68f3678a25532015e59d984de151b56a862ce9acd33e",
+      "notices": [
+        "SPDX-FileCopyrightText: 2019 Roman Gilg <subdiff@gmail.com>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    },
+    {
+      "header": "core/session.h",
+      "sha256": "543c390009d3d98a8501c3e51f1b8222b948a99fd00621e7179050a355ef2083",
+      "notices": [
+        "SPDX-FileCopyrightText: 2020 Vlad Zahorodnii <vlad.zahorodnii@kde.org>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    },
+    {
+      "header": "effect/effecthandler.h",
+      "sha256": "eda2cc3f36dd943cb82ad67c4b16e552ba4394c0bea156595a70cc930a56dd29",
+      "notices": [
+        "SPDX-FileCopyrightText: 2006 Lubos Lunak <l.lunak@kde.org>",
+        "SPDX-FileCopyrightText: 2009 Lucas Murray <lmurray@undefinedfire.com>",
+        "SPDX-FileCopyrightText: 2010, 2011 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
+        "SPDX-FileCopyrightText: 2018 Vlad Zahorodnii <vlad.zahorodnii@kde.org>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    },
+    {
+      "header": "main.h",
+      "sha256": "1eeb52c1d964f8ba41fdf04fc031fe9abe4eacd53be1dbec6492146c85db16ce",
+      "notices": [
+        "SPDX-FileCopyrightText: 1999, 2000 Matthias Ettrich <ettrich@kde.org>",
+        "SPDX-FileCopyrightText: 2003 Lubos Lunak <l.lunak@kde.org>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    },
+    {
+      "header": "workspace.h",
+      "sha256": "ea05ea70aacabd1182f4206492ae1b5397f40e4c5a325ef227ce85e36901134a",
+      "notices": [
+        "SPDX-FileCopyrightText: 1999, 2000 Matthias Ettrich <ettrich@kde.org>",
+        "SPDX-FileCopyrightText: 2003 Lubos Lunak <l.lunak@kde.org>",
+        "SPDX-FileCopyrightText: 2009 Lucas Murray <lmurray@undefinedfire.com>",
+        "SPDX-FileCopyrightText: 2019 Vlad Zahorodnii <vlad.zahorodnii@kde.org>",
+        "SPDX-FileCopyrightText: 2022 Natalie Clarius <natalie_clarius@yahoo.de>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    },
+    {
+      "header": "window.h",
+      "sha256": "bb36b1eb1d20c105346bc7c6d86e66c85d5705cb528991336fbb1bb5386ed4aa",
+      "notices": [
+        "SPDX-FileCopyrightText: 2015 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
+        "SPDX-FileCopyrightText: 2019 Vlad Zahorodnii <vlad.zahorodnii@kde.org>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    },
+    {
+      "header": "pointer_input.h",
+      "sha256": "511467f25d9c9cfd60283417b3913a24ebef251fb51c44a0ea8f3dd4768d39b3",
+      "notices": [
+        "SPDX-FileCopyrightText: 2013, 2016 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
+        "SPDX-FileCopyrightText: 2018 Roman Gilg <subdiff@gmail.com>",
+        "SPDX-FileCopyrightText: 2019 Vlad Zahorodnii <vlad.zahorodnii@kde.org>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    },
+    {
+      "header": "keyboard_input.h",
+      "sha256": "1f04cbca18661e39fe21ecd80d9f66054fb239d6ae41f0a168e8abccdedba9b5",
+      "notices": [
+        "SPDX-FileCopyrightText: 2013, 2016 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
+        "SPDX-License-Identifier: GPL-2.0-or-later"
+      ]
+    }
+  ]
+}

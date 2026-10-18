@@ -1,0 +1,17 @@
+{
+  "KPackageStructure": "KWin/Script",
+  "KPlugin": {
+    "Authors": [{ "Name": "OLED Window Guard contributors" }],
+    "Category": "Utilities",
+    "Description": "Default-off nested-session warning surface experiment",
+    "EnabledByDefault": false,
+    "Icon": "dialog-information",
+    "Id": "oledwindowguard-safety-warning-probe",
+    "License": "GPL-2.0-or-later",
+    "Name": "OLED Window Guard Safety Warning Probe",
+    "Version": "0.1.0"
+  },
+  "X-Plasma-API": "declarativescript",
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "X-Plasma-MainScript": "ui/main.qml"
+}

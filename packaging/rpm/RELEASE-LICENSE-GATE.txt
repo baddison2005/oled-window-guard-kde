@@ -1,0 +1,13 @@
+Adopted license: GPL-3.0-or-later AND MIT.
+Copyright (C) 2026 Dr. Brett Addison.
+
+Both the original controller/dashboard and compositor use GPLv3-or-later;
+shared schema/protocol definitions retain MIT. The evaluation-only proposal
+and its proprietary/GPL IPC boundary gate are superseded. Third-party KWin,
+Qt/PySide6 and KDE dependencies keep their own licenses and notices.
+
+Before publishing binary releases, deliver exact corresponding source and build
+instructions and satisfy applicable dependency/source obligations. The v1.0.0 release is unsigned and includes SHA-256 checksums, complete source
+and a source RPM. The disposable signing rehearsal key is not a production
+identity and is not used for release signing.
+See LICENSE, NOTICE, SOURCE.md and packaging/licenses/THIRD_PARTY_NOTICES.md.

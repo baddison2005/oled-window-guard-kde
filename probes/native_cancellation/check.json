@@ -1,0 +1,1 @@
+{"KPlugin":{"Name":"OLED Window Guard isolated cancellation check","Description":"Test-only synchronous cancellation verifier and input injector","EnabledByDefault":false,"License":"GPL-2.0-or-later"}}

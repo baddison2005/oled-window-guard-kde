@@ -1,0 +1,48 @@
+{
+  "status": "ADOPTED_2026-10-12",
+  "policy": "GNU GPL open source controller and compositor",
+  "copyrightAttribution": "Copyright (C) 2026 Dr. Brett Addison",
+  "rpmLicenseExpression": "GPL-3.0-or-later AND MIT",
+  "defaultOriginalProjectLicense": "GPL-3.0-or-later",
+  "components": [
+    {
+      "paths": [
+        "oled_window_guard/**",
+        "core/**",
+        "native/observer/**",
+        "packages/**",
+        "tools/**",
+        "tests/**",
+        "probes/**",
+        "packaging/rpm/**",
+        "assets/**"
+      ],
+      "license": "GPL-3.0-or-later"
+    },
+    {
+      "paths": [
+        "schema/**",
+        "interfaces/**"
+      ],
+      "license": "MIT"
+    },
+    {
+      "paths": [
+        "packaging/licenses/native-header-notices.json",
+        "packaging/licenses/GPL-2.0-or-later.txt",
+        "packaging/licenses/GPL-3.0.txt",
+        "packaging/licenses/LGPL-3.0.txt"
+      ],
+      "note": "Upstream notices and license texts retained verbatim; dependencies keep their own licenses."
+    }
+  ],
+  "ownerRightsConfirmed": true,
+  "iconRightsConfirmed": true,
+  "originalProjectOtherContributorsOrExternalAssets": false,
+  "mixedLicenseIpcBoundaryGate": "Superseded: both original implementations now GPL-3.0-or-later",
+  "publicationPerformed": false,
+  "remainingReleaseWork": [
+    "Deliver exact corresponding source with binary releases",
+    "Choose production signing identity and custody"
+  ]
+}
