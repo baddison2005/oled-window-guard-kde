@@ -92,6 +92,16 @@ class DashboardTests(unittest.TestCase):
                     self.assertIn("#39a869" if expected == "active" else
                                   "#8a8f98" if expected == "paused" else "#d99a23", light.styleSheet())
 
+    def test_tray_restore_wording_and_independent_pause_routes(self):
+        self.assertEqual(self.window.tray_restore.text(), 'Restore previous position')
+        self.window.update_status(dict(readiness='ready', paused=False,
+            movementPaused=False, brightnessPaused=False, canPause=True))
+        self.assertEqual(self.window.tray_pause_resume.text(), 'Pause all guarding')
+        self.window.tray_movement.trigger()
+        self.window.tray_brightness_guard.trigger()
+        self.window.tray_pause_resume.trigger()
+        self.assertEqual([action for action, _ in self.calls], ['PauseMovement', 'PauseBrightness', 'Pause'])
+
     def test_ready_actions_are_intents_and_restore_brightness_needs_capability(self):
         self.window.settings["movementDisplays"] = ["DP-1"]
         self.window.set_displays([{"id":"DP-1","name":"Display 1"}])

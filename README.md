@@ -23,24 +23,24 @@ Created by **Dr. Brett Addison**. This is the KDE Plasma edition; the [macOS edi
 
 ## Supported system
 
-The v1.0.0 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.7.5 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
+The v1.0.1 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.7.5 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
 
 The native observer uses version-specific KWin interfaces. The RPM deliberately requires the matching KWin and Qt versions; it is not a generic package for every Plasma release or distribution. A system update to different KWin/Qt versions requires a compatible OWG build. XWayland application windows are supported inside the tested Wayland session; an X11 desktop session is not supported.
 
 ## Install
 
-1. Download `oled-window-guard-1.0.0-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.0](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.0).
+1. Download `oled-window-guard-1.0.1-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.1](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.1).
 2. In the download directory, verify the RPM checksum against `SHA256SUMS`:
 
    ```sh
-   sha256sum oled-window-guard-1.0.0-1.fc44.x86_64.rpm
+   sha256sum oled-window-guard-1.0.1-1.fc44.x86_64.rpm
    ```
 
 3. Quit an existing OWG session, then install:
 
    ```sh
    oled-window-guard quit  # Only needed if OWG is already running.
-   sudo dnf install ./oled-window-guard-1.0.0-1.fc44.x86_64.rpm
+   sudo dnf install ./oled-window-guard-1.0.1-1.fc44.x86_64.rpm
    ```
 
 4. Open **OLED Window Guard** from the application launcher, or run `oled-window-guard open`.
@@ -58,6 +58,14 @@ For an upgrade, quit OWG before installing the new RPM. If you previously instal
 5. In **Safety & alerts**, configure warning length, interaction grace, app movement exclusions, launch at login, minimized startup and resume after unlock or wake.
 
 The bottom-left lights show each guard separately: **green = active**, **grey = paused**, **amber = waiting or unavailable**. Text labels also identify the state. Closing the dashboard leaves the tray/controller running; **Quit** stops both guards and removes dimming.
+
+## Cairo-Dock and launcher menu
+
+Right-click the OWG application icon in Cairo-Dock to access **Open OLED Window Guard**, **Pause movement guarding**, **Pause brightness guarding**, **Pause all guarding**, **Move Now**, **Skip**, **Restore previous position**, **Restore Brightness**, and **Quit**. Other launchers that support desktop-entry actions can show the same controls.
+
+Move Now uses the display selected in Overview when it is still selected for movement and connected, otherwise the first connected movement display. Restore previous position restores the last verified move. All existing warnings, capability checks and stale-plan refusals apply. Pause actions only pause; starting a guard remains available from the dashboard or tray.
+
+Launcher action labels are fixed and may remain visible when an operation is unavailable; the controller refuses unavailable operations safely. Cairo-Dock may cache the old action list after an upgrade. If the menu has not refreshed, quit and reopen Cairo-Dock. Existing pinned launchers referring to `/usr/share/applications/oled-window-guard.desktop` pick up the package entry; a standalone copied/custom launcher may need to be replaced with the installed application launcher.
 
 ## Interaction and safety behavior
 
@@ -103,7 +111,7 @@ python3 -m unittest discover -s tests/packaging
 
 `tests/integration/run_*.py` contains separate private-compositor and physical acceptance runners. They are not part of the unit-test commands above; read their prerequisites before running them. Some historical DNF/signing rehearsal runners require private development artifacts that are not included in this repository.
 
-See the [v1.0.0 review](docs/RELEASE_REVIEW_v1.0.0.md) and [changelog](CHANGELOG.md) for release scope and validation.
+See the [v1.0.1 review](docs/RELEASE_REVIEW_v1.0.1.md) and [changelog](CHANGELOG.md) for release scope and validation.
 
 ## License
 

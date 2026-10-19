@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 — 2026-10-19
+
+- Add nine desktop-entry actions for Cairo-Dock and compatible launchers.
+- Add independent pause-movement and pause-brightness CLI commands routed to the existing controller.
+- Rename the tray Restore item to Restore previous position.
+- Make dock/CLI Move Now use the display selected in Overview when available.
+
 ## 1.0.0 — 2026-10-18
 
 First public release of OLED Window Guard for KDE Plasma.

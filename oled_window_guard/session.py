@@ -128,7 +128,7 @@ class SessionHost(QObject):
             output = payload.get("outputId")
             if action == "MoveNow":
                 outputs = [row["id"] for row in self.status["displays"] if row["id"] in loaded.values["movementDisplays"]]
-                output = output or (outputs[0] if outputs else None)
+                output = output or (self.preview_output if self.preview_output in outputs else None) or (outputs[0] if outputs else None)
                 if output not in outputs:
                     return {"ok": False, "reason": "output-not-selected", "status": self.status}
             if action == "Restore" and output is not None and output != self.status.get("restoreOutputId"):

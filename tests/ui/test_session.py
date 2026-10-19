@@ -415,6 +415,22 @@ class SessionTests(unittest.TestCase):
         self.assertFalse(self.host.status["movementReady"])
         self.assertFalse(self.host.status["dimmingReady"])
 
+    def test_dock_move_uses_preview_display_with_safe_selection_fallback(self):
+        values = dict(preferences.defaults(), paused=False, movementDisplays=['DP-1', 'HDMI-1'])
+        preferences.save_settings(self.path, values)
+        outputs = [dict(id=name, connector=name) for name in ('DP-1', 'HDMI-1')]
+        for sequence, preview, explicit, expected in ((1, 'HDMI-1', None, 'HDMI-1'),
+                (2, 'disconnected', None, 'DP-1'), (3, 'HDMI-1', 'DP-1', 'DP-1')):
+            self.host.runtime_pending = None
+            self.host.runtime_command = None
+            reply = self.exchange(sequence, outputs=outputs,
+                native=dict(source='compositor-local', immediateCancellation=True, available=True),
+                runtime=self.runtime(armed=True, movementReady=True))
+            self.assertTrue(reply['ok'])
+            self.host.select_preview_output(preview)
+            self.assertTrue(self.host.submit('MoveNow', {'outputId': explicit} if explicit else {})['ok'])
+            self.assertEqual(self.host.runtime_command['outputId'], expected)
+
     def test_restore_target_mismatch_preserves_available_inverse(self):
         self.select_output()
         values=preferences.load_settings(self.path).values

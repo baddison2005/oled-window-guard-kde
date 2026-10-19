@@ -6,7 +6,7 @@
 %{!?owg_native_prefix:%global owg_native_prefix /usr}
 
 Name:           oled-window-guard
-Version:        1.0.0
+Version:        1.0.1
 Release:        %{?owg_release}%{!?owg_release:1}%{?dist}
 Summary:        Window movement and software dimming for KDE Plasma
 License:        GPL-3.0-or-later AND MIT
@@ -113,6 +113,10 @@ fi
 %{_datadir}/kwin/scripts/%{kpackage_id}/
 
 %changelog
+* Mon Oct 19 2026 Dr. Brett Addison - 1.0.1-1
+- Add Cairo-Dock desktop actions and independent CLI pause controls
+- Rename tray Restore and use the Overview display for dock Move Now
+
 * Sun Oct 18 2026 Dr. Brett Addison - 1.0.0-1
 - First public release: guarded movement, layout groups and independent dimming
 - Independent status lights and session/display continuity

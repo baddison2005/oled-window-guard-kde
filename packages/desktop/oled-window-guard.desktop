@@ -7,16 +7,40 @@ Icon=oled-window-guard
 Terminal=false
 Categories=Utility;Accessibility;
 StartupNotify=true
-Actions=Start;Pause;RestoreBrightness;
+Actions=Open;PauseMovement;PauseBrightness;Pause;MoveNow;Skip;Restore;RestoreBrightness;Quit;
 
-[Desktop Action Start]
-Name=Start guarding
-Exec=oled-window-guard start
+[Desktop Action Open]
+Name=Open OLED Window Guard
+Exec=oled-window-guard open
+
+[Desktop Action PauseMovement]
+Name=Pause movement guarding
+Exec=oled-window-guard pause-movement
+
+[Desktop Action PauseBrightness]
+Name=Pause brightness guarding
+Exec=oled-window-guard pause-brightness
 
 [Desktop Action Pause]
-Name=Pause guarding
+Name=Pause all guarding
 Exec=oled-window-guard pause
 
+[Desktop Action MoveNow]
+Name=Move Now
+Exec=oled-window-guard move-now
+
+[Desktop Action Skip]
+Name=Skip
+Exec=oled-window-guard skip
+
+[Desktop Action Restore]
+Name=Restore previous position
+Exec=oled-window-guard restore
+
 [Desktop Action RestoreBrightness]
-Name=Restore brightness
+Name=Restore Brightness
 Exec=oled-window-guard restore-brightness
+
+[Desktop Action Quit]
+Name=Quit
+Exec=oled-window-guard quit

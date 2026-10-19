@@ -11,6 +11,7 @@ from .session import SessionHost, call_host, register_host
 
 
 COMMANDS = {"open": "Open", "start": "Resume", "pause": "Pause",
+            "pause-movement": "PauseMovement", "pause-brightness": "PauseBrightness",
             "restore-brightness": "RestoreBrightness", "move-now": "MoveNow",
             "skip": "Skip", "restore": "Restore", "quit": "Quit"}
 
