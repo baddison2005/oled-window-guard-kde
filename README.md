@@ -6,6 +6,8 @@ OLED Window Guard automatically shifts and rearranges application windows and di
 
 Created by **Dr. Brett Addison**. This is the KDE Plasma edition; the [macOS edition](https://github.com/baddison2005/oled-window-guard) is maintained separately.
 
+<img src="screenshots/OWG_overview_active_guarding_movement_preview.png" alt="OWG Overview showing active movement and brightness guarding, display selection and a named-window movement preview" width="820">
+
 ## Features
 
 - **Shift position:** move windows within a configurable range, with optional horizontal and vertical order changes.
@@ -20,6 +22,79 @@ Created by **Dr. Brett Addison**. This is the KDE Plasma edition; the [macOS edi
 - **Restore brightness:** use the dashboard, tray or **Meta+Shift+B**. The shortcut can be disabled or customised through KDE.
 - **Session continuity:** optionally resume previously active guarding after unlock or wake. Guarding on a remaining display continues when another monitor disconnects. Fresh app and system startup remain paused.
 - **Desktop integration:** system tray, launch at login, start minimized, independent Start/Pause controls, and labeled movement/brightness status lights.
+
+## In action
+
+**Move and Restore:** three application windows move after the countdown, then return to their original positions after the Restore warning.
+
+<img src="screenshots/animations/movement-and-restore.gif" alt="Three windows moving after the warning and returning after the Restore warning" width="960">
+
+**Window and monitor dimming:** inactive windows dim, followed by the whole monitor. Restore Brightness clears both effects. Idle waiting between dimming stages is trimmed; fades play at normal speed.
+
+<img src="screenshots/animations/dimming-and-restore.gif" alt="Inactive windows dimming, whole-monitor dimming and Restore Brightness" width="960">
+
+## Screenshots
+
+<details>
+<summary>Movement settings and warning countdown</summary>
+
+Choose movement style, range, timing and the maximum number of windows. Configure selected displays individually when needed.
+
+<img src="screenshots/OWG_movement_global.png" alt="Global movement settings" width="820">
+
+<img src="screenshots/OWG_movement_section.png" alt="Movement settings and per-display controls" width="820">
+
+The warning shows the remaining time before movement and provides cancellation controls.
+
+<img src="screenshots/Movement_warning_countdown.png" alt="Movement warning with its countdown" width="449">
+
+</details>
+
+<details>
+<summary>Safety and alerts</summary>
+
+Configure interaction grace, exclusions, alerts and startup/session behavior.
+
+<img src="screenshots/OWG_safety_alerts.png" alt="Safety and alerts settings" width="820">
+
+</details>
+
+<details>
+<summary>Window and monitor dimming</summary>
+
+Set independent darkness, delays and fades for inactive windows and displays, with brightness exemptions and desktop-click behavior.
+
+<img src="screenshots/OWG_monitor_dimming.png" alt="Window and monitor dimming settings, brightness restoration and exemptions" width="820">
+
+</details>
+
+<details>
+<summary>Layout groups</summary>
+
+Use layout zones to constrain window movement or rotate windows among zones.
+
+<img src="screenshots/OWG_Window_Layouts_layout_groups.png" alt="Window Layouts integration and layout-group settings" width="820">
+
+</details>
+
+<details>
+<summary>Tray and Cairo-Dock controls</summary>
+
+Start or pause movement and brightness independently, request movement or Restore, and restore brightness from the desktop menus. Labels and availability follow the guard states.
+
+<img src="screenshots/OWG_panel_right_click_options.png" alt="OWG system-tray menu" width="212">
+<img src="screenshots/OWG_Cairo_dock_right_click_menu.png" alt="OWG live Cairo-Dock menu" width="258">
+
+</details>
+
+<details>
+<summary>About and update checks</summary>
+
+Check the installed package and GitHub for a newer compatible release.
+
+<img src="screenshots/OWG_About_section_and_check_updates.png" alt="About page with installed package and update-check controls" width="820">
+
+</details>
 
 ## Supported system
 
