@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 from oled_window_guard.dashboard import ControllerIntentClient, Dashboard, linux_application_ids
 from oled_window_guard.autostart import LoginStartup
@@ -101,6 +101,40 @@ class DashboardTests(unittest.TestCase):
         self.window.tray_brightness_guard.trigger()
         self.window.tray_pause_resume.trigger()
         self.assertEqual([action for action, _ in self.calls], ['PauseMovement', 'PauseBrightness', 'Pause'])
+
+    def test_about_checks_github_only_on_explicit_click_and_offers_upgrade(self):
+        self.finish_reads()
+        self.assertEqual(self.window.check_updates_button.text(), 'Check for updates')
+        self.assertTrue(self.window.upgrade_button.isHidden())
+        result = dict(message='Version 1.0.2 available', offer=dict(version='1.0.2'))
+        with patch('oled_window_guard.dashboard.check_for_updates', return_value=result) as check:
+            self.window.check_updates_button.click()
+            self.finish_reads()
+            check.assert_called_once_with()
+        self.assertFalse(self.window.upgrade_button.isHidden())
+        self.assertIn('1.0.2', self.window.upgrade_button.text())
+        with patch('oled_window_guard.dashboard.QMessageBox.question', return_value=QMessageBox.StandardButton.No), \
+             patch('oled_window_guard.dashboard.download_update') as download:
+            self.window.upgrade_button.click()
+            download.assert_not_called()
+        self.window._apply_package_status(dict(message='Could not check GitHub', offer=None))
+        self.assertTrue(self.window.upgrade_button.isHidden())
+        self.assertTrue(self.window.check_updates_button.isEnabled())
+
+    def test_upgrade_download_is_confirmed_and_failures_keep_app_open(self):
+        self.finish_reads()
+        self.window._apply_package_status(dict(message='Update available', offer=dict(version='1.0.2')))
+        with patch('oled_window_guard.dashboard.QMessageBox.question', return_value=QMessageBox.StandardButton.Yes), \
+             patch('oled_window_guard.dashboard.download_update', side_effect=ValueError('checksum failed')) as download, \
+             patch.object(self.window, '_launch_upgrade') as launch:
+            self.window.upgrade_button.click()
+            self.finish_reads()
+            download.assert_called_once()
+            launch.assert_not_called()
+        self.assertIn('checksum failed', self.window.package_update_label.text())
+        self.assertTrue(self.window.check_updates_button.isEnabled())
+        self.assertFalse(self.window._upgrade_busy)
+        self.assertEqual(self.calls, [])
 
     def test_ready_actions_are_intents_and_restore_brightness_needs_capability(self):
         self.window.settings["movementDisplays"] = ["DP-1"]

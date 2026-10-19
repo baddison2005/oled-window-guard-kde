@@ -204,6 +204,7 @@ class SessionHost(QObject):
             self.dashboard.update_status(self.status)
             return {"ok": True, "status": self.status}
         if action == "Quit":
+            self.dashboard.cancel_update_download()
             self.cancel_preview("quit")
             self.dashboard.warning_audio.stop()
             self.layout_executor.shutdown(wait=False, cancel_futures=True)

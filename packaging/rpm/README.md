@@ -13,7 +13,7 @@ plus `rpm-build`, then build from the source root:
 rpm_top=$(mktemp -d /tmp/owg-rpm.XXXXXX)
 mkdir -p "$rpm_top"/{SOURCES,SPECS,BUILD,BUILDROOT,RPMS,SRPMS,tmp}
 python3 packaging/rpm/make-source.py
-cp oled-window-guard-1.0.1.tar.gz "$rpm_top/SOURCES/"
+cp oled-window-guard-1.0.2.tar.gz "$rpm_top/SOURCES/"
 rpmbuild -ba --define "_topdir $rpm_top" --define "_tmppath $rpm_top/tmp" packaging/rpm/oled-window-guard.spec
 ```
 
@@ -31,7 +31,7 @@ private lifecycle development; official builds compile it afresh.
 
 The original KDE implementation is GPL-3.0-or-later; shared schema and protocols
 are MIT. The package includes full notices. See [source instructions](../../SOURCE.md).
-The v1.0.1 RPM is unsigned; the GitHub release provides SHA-256 checksums and
+The v1.0.2 RPM is unsigned; the GitHub release provides SHA-256 checksums and
 corresponding source. No signing rehearsal key is used as a release identity.
 
 Private RPM runtime validation uses an extracted payload and isolated KWin:

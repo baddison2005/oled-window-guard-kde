@@ -6,7 +6,7 @@
 %{!?owg_native_prefix:%global owg_native_prefix /usr}
 
 Name:           oled-window-guard
-Version:        1.0.1
+Version:        1.0.2
 Release:        %{?owg_release}%{!?owg_release:1}%{?dist}
 Summary:        Window movement and software dimming for KDE Plasma
 License:        GPL-3.0-or-later AND MIT
@@ -32,6 +32,9 @@ BuildRequires:  xcb-util-keysyms-devel
 # test injectors are never packaged. Runtime mismatch still fails closed.
 Requires:       python3 >= 3.11
 Requires:       python3-pyside6
+Requires:       python3-rpm
+Requires:       /usr/bin/pkexec
+Requires:       /usr/bin/dnf
 Requires:       kwin = 6.7.5
 Requires:       qt6-qtbase = 6.11.2
 Requires:       qt6-qtdeclarative = 6.11.2
@@ -113,6 +116,10 @@ fi
 %{_datadir}/kwin/scripts/%{kpackage_id}/
 
 %changelog
+* Mon Oct 19 2026 Dr. Brett Addison - 1.0.2-1
+- Add explicit GitHub update checks and verified, authorized in-app RPM upgrades
+- Preserve settings and reopen paused after upgrade or cancelled authorization
+
 * Mon Oct 19 2026 Dr. Brett Addison - 1.0.1-1
 - Add Cairo-Dock desktop actions and independent CLI pause controls
 - Rename tray Restore and use the Overview display for dock Move Now

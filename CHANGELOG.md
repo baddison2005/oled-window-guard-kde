@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2 — 2026-10-19
+
+- About now checks GitHub for newer stable releases when requested.
+- Offer confirmed Download and upgrade with bounded HTTPS downloads, SHA-256 verification and RPM identity/runtime checks.
+- Request administrator authorization through DNF after safely closing OWG; reopen paused with preferences retained.
+- Report network, validation and installation failures distinctly, and reopen after cancelled authorization.
+
 ## 1.0.1 — 2026-10-19
 
 - Add nine desktop-entry actions for Cairo-Dock and compatible launchers.

@@ -23,31 +23,39 @@ Created by **Dr. Brett Addison**. This is the KDE Plasma edition; the [macOS edi
 
 ## Supported system
 
-The v1.0.1 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.7.5 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
+The v1.0.2 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.7.5 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
 
 The native observer uses version-specific KWin interfaces. The RPM deliberately requires the matching KWin and Qt versions; it is not a generic package for every Plasma release or distribution. A system update to different KWin/Qt versions requires a compatible OWG build. XWayland application windows are supported inside the tested Wayland session; an X11 desktop session is not supported.
 
 ## Install
 
-1. Download `oled-window-guard-1.0.1-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.1](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.1).
+1. Download `oled-window-guard-1.0.2-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.2](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.2).
 2. In the download directory, verify the RPM checksum against `SHA256SUMS`:
 
    ```sh
-   sha256sum oled-window-guard-1.0.1-1.fc44.x86_64.rpm
+   sha256sum oled-window-guard-1.0.2-1.fc44.x86_64.rpm
    ```
 
 3. Quit an existing OWG session, then install:
 
    ```sh
    oled-window-guard quit  # Only needed if OWG is already running.
-   sudo dnf install ./oled-window-guard-1.0.1-1.fc44.x86_64.rpm
+   sudo dnf install ./oled-window-guard-1.0.2-1.fc44.x86_64.rpm
    ```
 
 4. Open **OLED Window Guard** from the application launcher, or run `oled-window-guard open`.
 
-The release RPM is unsigned; checksums accompany the downloads. Dependencies come from your configured Fedora repositories. There is no automatic update repository: download future compatible RPMs from GitHub Releases and install them with DNF. Installation does not enable login startup or start guarding.
+The release RPM is unsigned; checksums accompany the downloads. Dependencies come from your configured Fedora repositories. In About, choose **Check for updates** to query the latest stable GitHub release, then **Download and upgrade** when a newer compatible RPM is offered. Manual downloads and installation with DNF remain available. Installation does not enable login startup or start guarding.
 
 For an upgrade, quit OWG before installing the new RPM. If you previously installed a user-local development copy, remove it using its installer/ownership manifest before using the RPM so that it cannot shadow the packaged launcher or compositor script.
+
+## In-app upgrades
+
+**About → Check for updates** queries the official GitHub repository only when requested. A newer Fedora 44 x86_64 RPM shows **Download and upgrade**. A failed/offline check is reported as an error rather than as “up to date.” Checking alone does not download an RPM or install anything.
+
+Confirm the upgrade to download it. OWG verifies GitHub's SHA-256 asset digest, the RPM name/version/architecture and its exact KWin/Qt requirements before closing. The session helper closes the existing controller and unloads its compositor runtime, then DNF requests administrator authorization. Settings and login preferences are backed up and retained. The app reopens paused, including after cancelled authorization or an installation failure. The reopened About page reports the result. Failed download or preflight checks leave the running app in place.
+
+Upgrades cannot silently change the compositor/Qt version. The installer uses installed dependencies without enabling remote repositories; if a future release needs additional dependencies, use manual DNF installation with the configured Fedora repositories. RPMs are currently unsigned; verified downloads use the official HTTPS GitHub release and its SHA-256 digest. There is no unattended upgrade, forced downgrade or new autostart opt-in.
 
 ## First use
 
@@ -111,7 +119,7 @@ python3 -m unittest discover -s tests/packaging
 
 `tests/integration/run_*.py` contains separate private-compositor and physical acceptance runners. They are not part of the unit-test commands above; read their prerequisites before running them. Some historical DNF/signing rehearsal runners require private development artifacts that are not included in this repository.
 
-See the [v1.0.1 review](docs/RELEASE_REVIEW_v1.0.1.md) and [changelog](CHANGELOG.md) for release scope and validation.
+See the [v1.0.2 review](docs/RELEASE_REVIEW_v1.0.2.md) and [changelog](CHANGELOG.md) for release scope and validation.
 
 ## License
 

@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -105,6 +106,32 @@ def worker(root):
         wait(live);record('owned-adapter-unload-recovery-paused')
         assert bus.interface().serviceOwner(SERVICE).value()==owner
         assert preferences.load_settings(settings).values['paused'] is True
+        if (app_root/'oled_window_guard/upgrade_worker.py').is_file():
+            # Exercise the real session handoff and adapter unload. Only the
+            # administrator transaction is substituted with an authorization
+            # cancellation; no normal-session package database is modified.
+            from oled_window_guard.upgrade_worker import coordinate
+            from oled_window_guard.updates import PACKAGE, REPOSITORY, _run
+            staged=root/'upgrade';staged.mkdir(mode=0o700)
+            fields=_run(['rpm','-qp','--qf','%{VERSION}\n%{RELEASE}',str(root/'tested.rpm')]).splitlines()
+            version,release=fields
+            name=f'{PACKAGE}-{version}-{release}.x86_64.rpm'
+            shutil.copy2(root/'tested.rpm',staged/name)
+            (staged/'offer.json').write_text(json.dumps(dict(version=version,release=release,name=name,
+                url=f'{REPOSITORY}/releases/download/v{version}/{name}',size=(staged/name).stat().st_size,
+                sha256=hashlib.sha256((staged/name).read_bytes()).hexdigest())))
+            def query(argv):
+                if argv==['rpm','-q','--qf','%{VERSION}-%{RELEASE}',PACKAGE]:return '0.0.0-1.fc44'
+                return _run(argv)
+            def reopen_cancelled(folder):
+                nonlocal dashboard
+                dashboard=launch()
+            before=settings.read_bytes()
+            outcome=coordinate(staged,dashboard.pid,runner=query,installer=lambda _:126,
+                restart=reopen_cancelled,settings_paths=[settings])
+            assert outcome['result']=='cancelled',outcome
+            wait(live);assert settings.read_bytes()==before
+            record('cancelled-upgrade-unloads-runtime-and-reopens-paused-with-settings-preserved')
         intent('Quit');wait(lambda:not present(SERVICE))
         dashboard.wait(timeout=10);assert dashboard.returncode==0
         assert not scripting('isScriptLoaded','oled-window-guard-adapter')
@@ -143,6 +170,7 @@ def main():
     from tests.integration.run_native_rpm_install import inspect
     info=inspect(rpm)
     root=Path(tempfile.mkdtemp(prefix='owg-rpm-runtime-'));payload=root/'payload';payload.mkdir()
+    shutil.copy2(rpm,root/'tested.rpm')
     data=subprocess.run(['rpm2cpio',str(rpm)],check=True,capture_output=True).stdout
     subprocess.run(['cpio','-idm','--quiet','--no-absolute-filenames'],input=data,cwd=payload,check=True,capture_output=True)
     env=os.environ.copy()

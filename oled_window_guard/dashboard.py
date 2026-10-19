@@ -14,6 +14,9 @@ import json
 import math
 import os
 from pathlib import Path
+import subprocess
+import sys
+import threading
 from typing import Any, Callable, Mapping, Protocol
 
 from PySide6.QtCore import Qt, Signal, QTimer
@@ -27,7 +30,7 @@ from PySide6.QtWidgets import (
 
 from . import preferences
 from .layout_provider import LayoutProvider
-from .updates import package_update_status
+from .updates import package_update_status, check_for_updates, download_update, read_upgrade_result
 from .warning_audio import WarningAudio
 from .movement_preview import MovementPreview
 from .autostart import LoginStartup
@@ -144,6 +147,13 @@ class Dashboard(QMainWindow):
         self._initializing = True
         self._read_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="owg-ui-read")
         self._reads = {}
+        self._update_offer = None
+        self._upgrade_busy = False
+        self._upgrade_process = None
+        self._upgrade_folder = None
+        self._upgrade_cancel = threading.Event()
+        notice_path = os.environ.pop("OWG_UPGRADE_RESULT", "")
+        self._upgrade_notice = read_upgrade_result(notice_path) if notice_path else ""
         self._palette_key = QApplication.instance().palette().cacheKey()
         executor = self._read_executor
         self.destroyed.connect(lambda: executor.shutdown(wait=False, cancel_futures=True))
@@ -592,12 +602,17 @@ class Dashboard(QMainWindow):
 
     def _build_about(self) -> None:
         layout = self._page("About", "Keep your windows moving. Care for your OLED.")
-        form = self._card(layout, "OLED Window Guard 1.0.1 · Dr. Brett Addison")
+        form = self._card(layout, "OLED Window Guard 1.0.2 · Dr. Brett Addison")
         self.about_text = self._help(form, "Guarded movement and software dimming for your desktop. Original KDE implementation: GNU GPL version 3 or later. Shared schema and interfaces: MIT. Third-party components retain their own licences.")
         self._help(form, "OWG is provided without warranty. It cannot guarantee prevention of image retention or burn-in. The supported package targets Fedora 44, KWin 6.7.5 and Qt 6.11.2. Enable Resume guarding after unlock or wake in Safety & alerts to continue previously active guarding after a session interruption.")
         self.package_update_label = self._help(form, "")
-        check = QPushButton("Check installed package version"); check.clicked.connect(self.refresh_package_status); form.addRow(check)
-        self._help(form, "Download releases from github.com/baddison2005/oled-window-guard-kde and install the RPM with DNF. Checking the installed version does not download or install an update. Installation does not enable autostart.")
+        self.check_updates_button = QPushButton("Check for updates")
+        self.check_updates_button.clicked.connect(lambda: self.refresh_package_status(check_github=True))
+        form.addRow(self.check_updates_button)
+        self.upgrade_button = QPushButton("Download and upgrade…")
+        self.upgrade_button.hide(); self.upgrade_button.clicked.connect(self._confirm_upgrade)
+        form.addRow(self.upgrade_button)
+        self._help(form, "Check for updates contacts the official GitHub repository. Downloads and installation require your confirmation. The RPM is verified against GitHub’s SHA-256 digest and checked against your installed KWin/Qt versions. Administrator authorization is required. OWG closes during installation and reopens paused with your settings retained. Installation does not enable autostart.")
         self.refresh_package_status(); layout.addStretch()
 
     def _queue_read(self, name: str, read, apply) -> None:
@@ -615,12 +630,59 @@ class Dashboard(QMainWindow):
             del self._reads[name]
             try: apply(future.result())
             except Exception as exc:
-                label = self.layout_status if name == "layouts" else self.package_update_label
-                label.setText(f"Unable to refresh {name}: {exc}. Try again.")
+                if name in ("package", "upgrade-download"):
+                    self._upgrade_busy = False
+                    self._apply_package_status({"message": f"Unable to complete update request: {exc}. Try again.", "offer": None})
+                else:
+                    self.layout_status.setText(f"Unable to refresh {name}: {exc}. Try again.")
+        if self._upgrade_process is not None and self._upgrade_process.poll() is not None:
+            self._upgrade_process = None; self._upgrade_busy = False
+            notice = read_upgrade_result(self._upgrade_folder / "result.json")
+            self._apply_package_status({"message": notice or "The upgrade helper stopped. Check for updates to try again.", "offer": None})
 
-    def refresh_package_status(self) -> None:
-        self.package_update_label.setText("Checking installed package…")
-        self._queue_read("package", package_update_status, lambda result: self.package_update_label.setText(result["message"]))
+    def refresh_package_status(self, *, check_github=False) -> None:
+        if "package" in self._reads or self._upgrade_busy:
+            return
+        self._update_offer = None; self.upgrade_button.hide()
+        self.check_updates_button.setEnabled(False)
+        self.package_update_label.setText("Checking GitHub for updates…" if check_github else "Checking installed package…")
+        self._queue_read("package", check_for_updates if check_github else package_update_status, self._apply_package_status)
+
+    def _apply_package_status(self, result):
+        self._update_offer = result.get("offer")
+        self.package_update_label.setText((self._upgrade_notice + "\n\n" if self._upgrade_notice else "") + result["message"])
+        self.check_updates_button.setEnabled(not self._upgrade_busy)
+        self.upgrade_button.setVisible(self._update_offer is not None)
+        self.upgrade_button.setEnabled(not self._upgrade_busy)
+        if self._update_offer:
+            self.upgrade_button.setText(f"Download and upgrade to {self._update_offer['version']}…")
+
+    def _confirm_upgrade(self):
+        if self._upgrade_busy or not self._update_offer:
+            return
+        version = self._update_offer['version']
+        answer = QMessageBox.question(self, "Upgrade OLED Window Guard",
+            f"Download and install version {version}?\n\nOWG will close for installation and reopen paused. Your settings will be retained. Administrator authorization is required.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        self._upgrade_notice = ""; self._upgrade_busy = True; self._upgrade_cancel.clear()
+        self.check_updates_button.setEnabled(False); self.upgrade_button.setEnabled(False)
+        self.package_update_label.setText(f"Downloading and verifying version {version}…")
+        offer = dict(self._update_offer)
+        self._queue_read("upgrade-download", lambda: download_update(offer, cancel=self._upgrade_cancel), self._launch_upgrade)
+
+    def _launch_upgrade(self, folder):
+        self._upgrade_folder = Path(folder)
+        env = dict(os.environ, PYTHONPATH=str(Path(__file__).resolve().parents[1]))
+        with (self._upgrade_folder / "upgrade.log").open("w") as log:
+            self._upgrade_process = subprocess.Popen([sys.executable, "-m", "oled_window_guard.upgrade_worker",
+                str(self._upgrade_folder), str(os.getpid())], env=env, cwd="/tmp", stdin=subprocess.DEVNULL,
+                stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+        self.package_update_label.setText("Preparing upgrade. OWG will close and request administrator authorization, then reopen paused.")
+
+    def cancel_update_download(self):
+        self._upgrade_cancel.set()
 
     @staticmethod
     def _display_name(display: Mapping[str, Any]) -> str:
