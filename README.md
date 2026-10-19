@@ -29,7 +29,7 @@ Created by **Dr. Brett Addison**. This is the KDE Plasma edition; the [macOS edi
 
 <img src="screenshots/animations/movement-and-restore.gif" alt="Three windows moving after the warning and returning after the Restore warning" width="960">
 
-**Window and monitor dimming:** inactive windows dim, followed by the whole monitor. Restore Brightness clears both effects. Idle waiting between dimming stages is trimmed; fades play at normal speed.
+**Window and monitor dimming:** inactive windows dim, followed by the whole monitor. Restore Brightness clears both effects, with a longer hold on the fully restored desktop at the end. Idle waiting between dimming stages is trimmed; fades play at normal speed.
 
 <img src="screenshots/animations/dimming-and-restore.gif" alt="Inactive windows dimming, whole-monitor dimming and Restore Brightness" width="960">
 
