@@ -23,24 +23,24 @@ Created by **Dr. Brett Addison**. This is the KDE Plasma edition; the [macOS edi
 
 ## Supported system
 
-The v1.0.2 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.7.5 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
+The v1.0.3 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.7.5 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
 
 The native observer uses version-specific KWin interfaces. The RPM deliberately requires the matching KWin and Qt versions; it is not a generic package for every Plasma release or distribution. A system update to different KWin/Qt versions requires a compatible OWG build. XWayland application windows are supported inside the tested Wayland session; an X11 desktop session is not supported.
 
 ## Install
 
-1. Download `oled-window-guard-1.0.2-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.2](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.2).
+1. Download `oled-window-guard-1.0.3-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.3](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.3).
 2. In the download directory, verify the RPM checksum against `SHA256SUMS`:
 
    ```sh
-   sha256sum oled-window-guard-1.0.2-1.fc44.x86_64.rpm
+   sha256sum oled-window-guard-1.0.3-1.fc44.x86_64.rpm
    ```
 
 3. Quit an existing OWG session, then install:
 
    ```sh
    oled-window-guard quit  # Only needed if OWG is already running.
-   sudo dnf install ./oled-window-guard-1.0.2-1.fc44.x86_64.rpm
+   sudo dnf install ./oled-window-guard-1.0.3-1.fc44.x86_64.rpm
    ```
 
 4. Open **OLED Window Guard** from the application launcher, or run `oled-window-guard open`.
@@ -69,11 +69,15 @@ The bottom-left lights show each guard separately: **green = active**, **grey = 
 
 ## Cairo-Dock and launcher menu
 
-Right-click the OWG application icon in Cairo-Dock to access **Open OLED Window Guard**, **Pause movement guarding**, **Pause brightness guarding**, **Pause all guarding**, **Move Now**, **Skip**, **Restore previous position**, **Restore Brightness**, and **Quit**. Other launchers that support desktop-entry actions can show the same controls.
+While OWG is running, right-click its application icon in Cairo-Dock for the same live controls as the tray: **Open OLED Window Guard**, **Start/Pause movement guarding**, **Start/Pause brightness guarding**, **Start selected/Pause all guarding**, **Move Now**, **Skip**, **Restore previous position**, **Restore Brightness**, and **Quit**.
 
-Move Now uses the display selected in Overview when it is still selected for movement and connected, otherwise the first connected movement display. Restore previous position restores the last verified move. All existing warnings, capability checks and stale-plan refusals apply. Pause actions only pause; starting a guard remains available from the dashboard or tray.
+Movement and brightness labels follow their independent guard states. Move Now, Skip and Restore previous position are disabled while movement is paused; Restore Brightness is disabled while brightness is paused. Availability also follows the controller's safety checks: Skip requires an active warning and Restore requires a verified last move. The menu updates from the same actions as the dashboard/tray.
 
-Launcher action labels are fixed and may remain visible when an operation is unavailable; the controller refuses unavailable operations safely. Cairo-Dock may cache the old action list after an upgrade. If the menu has not refreshed, quit and reopen Cairo-Dock. Existing pinned launchers referring to `/usr/share/applications/oled-window-guard.desktop` pick up the package entry; a standalone copied/custom launcher may need to be replaced with the installed application launcher.
+Move Now uses the display selected in Overview when it is still selected for movement and connected, otherwise the first connected movement display. All existing warnings, capability checks and stale-plan refusals apply.
+
+This integration requires Cairo-Dock's **D-Bus plug-in** with **SetMenu/libdbusmenu** support and the Plasma status notifier host. It is optional: the tray and dashboard work without it. OWG reconnects after a dock restart or launcher reload. When OWG is closed, clicking its icon opens it normally; a live guarding menu requires the app to be running. Fixed desktop-entry actions were removed to avoid duplicate controls. Other launchers continue to open OWG normally.
+
+Cairo-Dock may cache the old fixed action list after an upgrade. If duplicate or fixed labels remain, quit and reopen Cairo-Dock once. Existing pinned launchers referring to `/usr/share/applications/oled-window-guard.desktop` use the updated package entry; replace a standalone copied/custom launcher with the installed application launcher if needed.
 
 ## Interaction and safety behavior
 
@@ -119,7 +123,7 @@ python3 -m unittest discover -s tests/packaging
 
 `tests/integration/run_*.py` contains separate private-compositor and physical acceptance runners. They are not part of the unit-test commands above; read their prerequisites before running them. Some historical DNF/signing rehearsal runners require private development artifacts that are not included in this repository.
 
-See the [v1.0.2 review](docs/RELEASE_REVIEW_v1.0.2.md) and [changelog](CHANGELOG.md) for release scope and validation.
+See the [v1.0.3 review](docs/RELEASE_REVIEW_v1.0.3.md) and [changelog](CHANGELOG.md) for release scope and validation.
 
 ## License
 

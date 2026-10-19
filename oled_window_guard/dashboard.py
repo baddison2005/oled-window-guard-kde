@@ -36,6 +36,7 @@ from .movement_preview import MovementPreview
 from .autostart import LoginStartup
 from .application_identity import exclusion_aliases
 from .slider_control import SliderControl, CompactDoubleSpinBox
+from .dock_menu import CairoDockMenu
 
 
 def application_icon() -> QIcon:
@@ -208,6 +209,8 @@ class Dashboard(QMainWindow):
         self.tray.activated.connect(lambda reason: self._send("Open") if reason == QSystemTrayIcon.ActivationReason.Trigger else None)
         if QSystemTrayIcon.isSystemTrayAvailable():
             self.tray.show()
+        self.dock_menu = CairoDockMenu(self)
+        QApplication.instance().aboutToQuit.connect(self.dock_menu.stop)
         self.update_status(self.status)
         self._initializing = False
 
@@ -602,7 +605,7 @@ class Dashboard(QMainWindow):
 
     def _build_about(self) -> None:
         layout = self._page("About", "Keep your windows moving. Care for your OLED.")
-        form = self._card(layout, "OLED Window Guard 1.0.2 · Dr. Brett Addison")
+        form = self._card(layout, "OLED Window Guard 1.0.3 · Dr. Brett Addison")
         self.about_text = self._help(form, "Guarded movement and software dimming for your desktop. Original KDE implementation: GNU GPL version 3 or later. Shared schema and interfaces: MIT. Third-party components retain their own licences.")
         self._help(form, "OWG is provided without warranty. It cannot guarantee prevention of image retention or burn-in. The supported package targets Fedora 44, KWin 6.7.5 and Qt 6.11.2. Enable Resume guarding after unlock or wake in Safety & alerts to continue previously active guarding after a session interruption.")
         self.package_update_label = self._help(form, "")
@@ -956,6 +959,7 @@ class Dashboard(QMainWindow):
     def _refresh_action_states(self) -> None:
         status = self.status
         paused = status.get("paused") is not False
+        movement_paused = status.get("movementPaused", paused) is not False
         ready = status.get("readiness") == "ready"
         caps = status.get("capabilities")
         caps = caps if isinstance(caps, dict) else {}
@@ -973,10 +977,10 @@ class Dashboard(QMainWindow):
         selected = (self.preview_display.currentData() in self.settings["movementDisplays"]
                     and any(d.get("id") == self.preview_display.currentData() for d in self._displays))
         self.preview_display.setEnabled(status.get("transactionActive") is not True and not planning_busy)
-        self.move_now_button.setEnabled(selected and ("movementActiveDisplays" not in status or self.preview_display.currentData() in status["movementActiveDisplays"]) and ready and not paused and not planning_busy and status.get("movementReady") is True and status.get("transactionActive") is not True)
-        self.skip_button.setEnabled(status.get("transactionActive") is True and status.get("skipAvailable") is True)
-        self.restore_button.setEnabled(selected and self.preview_display.currentData() == status.get("restoreOutputId") and ready and not paused and not planning_busy and status.get("transactionActive") is not True and status.get("restoreAvailable") is True)
-        self.restore_brightness_button.setEnabled(caps.get("restoreBrightness") is True)
+        self.move_now_button.setEnabled(selected and ("movementActiveDisplays" not in status or self.preview_display.currentData() in status["movementActiveDisplays"]) and ready and not movement_paused and not planning_busy and status.get("movementReady") is True and status.get("transactionActive") is not True)
+        self.skip_button.setEnabled(not movement_paused and status.get("transactionActive") is True and status.get("skipAvailable") is True)
+        self.restore_button.setEnabled(selected and self.preview_display.currentData() == status.get("restoreOutputId") and ready and not movement_paused and not planning_busy and status.get("transactionActive") is not True and status.get("restoreAvailable") is True)
+        self.restore_brightness_button.setEnabled(status.get("brightnessPaused") is not True and caps.get("restoreBrightness") is True)
         self.dimming_brightness_button.setEnabled(self.restore_brightness_button.isEnabled())
         self.preview_button.setEnabled(status.get("planningReady") is True and status.get("transactionActive") is not True and
             self.preview_display.currentData() in self.settings["movementDisplays"] and

@@ -25,7 +25,7 @@ class LauncherActionsTests(unittest.TestCase):
         entry.read(ROOT / 'packages/desktop/oled-window-guard.desktop')
         return entry
 
-    def test_all_dock_actions_have_requested_names_order_and_controller_routes(self):
+    def test_no_fixed_dock_duplicates_and_cli_routes_remain_available(self):
         expected = [
             ('Open', 'Open OLED Window Guard'),
             ('PauseMovement', 'Pause movement guarding'),
@@ -38,13 +38,10 @@ class LauncherActionsTests(unittest.TestCase):
             ('Quit', 'Quit'),
         ]
         entry = self.entry()
-        self.assertEqual(entry['Desktop Entry']['Actions'].strip(';').split(';'), [x[0] for x in expected])
+        self.assertNotIn('Actions', entry['Desktop Entry'])
         for action, label in expected:
             with self.subTest(action=action):
-                group = entry['Desktop Action ' + action]
-                self.assertEqual(group['Name'], label)
-                executable, command = shlex.split(group['Exec'])
-                self.assertEqual(executable, 'oled-window-guard')
+                command = next(key for key, value in cli.COMMANDS.items() if value == action)
                 with patch.object(cli, 'call_host', return_value={'ok': True}) as call, \
                      patch.object(cli, 'SessionHost') as host, contextlib.redirect_stdout(io.StringIO()):
                     self.assertEqual(cli.main([command]), 0)

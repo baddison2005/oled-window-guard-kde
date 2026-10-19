@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise desktop actions through Gio on a private bus; never contact the desktop."""
+"""Exercise retained launcher CLI routes on a private bus; the live menu replaces fixed desktop actions."""
 import argparse
 import json
 import os
@@ -36,12 +36,15 @@ def worker(root, app_root, desktop):
     assert bus.registerObject('/org/oledwindowguard/Controller1', service, controller,
                               QDBusConnection.RegisterOption.ExportAllSlots)
     info = Gio.DesktopAppInfo.new_from_filename(str(desktop))
-    assert info is not None and list(info.list_actions()) == ACTIONS
+    assert info is not None and list(info.list_actions()) == []
+    sys.path.insert(0, str(app_root))
+    from oled_window_guard.__main__ import COMMANDS
     context = GLib.MainContext.default()
     names = []
     for index, action in enumerate(ACTIONS):
-        names.append(info.get_action_name(action))
-        info.launch_action(action, None)
+        names.append(action)
+        command = next(key for key, value in COMMANDS.items() if value == action)
+        process = subprocess.Popen(['oled-window-guard', command], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         until = time.monotonic() + 8
         while len(calls) <= index and time.monotonic() < until:
             app.processEvents()
@@ -49,6 +52,7 @@ def worker(root, app_root, desktop):
                 context.iteration(False)
             time.sleep(.01)
         assert calls == [(a, {}) for a in ACTIONS[:index + 1]], (action, calls)
+        assert process.wait(timeout=5) == 0
     bus.unregisterObject('/org/oledwindowguard/Controller1')
     bus.unregisterService(service)
     missing = []

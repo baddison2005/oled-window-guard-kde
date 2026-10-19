@@ -23,6 +23,7 @@ class SessionTests(unittest.TestCase):
         self.host = SessionHost(self.app, settings_path=self.path)
 
     def tearDown(self):
+        self.host.dashboard.dock_menu.stop()
         self.host.layout_executor.shutdown(wait=True, cancel_futures=True)
         self.host.observer_timer.stop()
         self.host.dashboard.tray.hide()

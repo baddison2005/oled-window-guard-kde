@@ -46,4 +46,4 @@ substitute for source. System dependencies are not bundled: their Fedora source
 packages and upstream licensing/source information must remain available as
 applicable. Preserve any modified build instructions and source needed for your
 distributed artifact. The public source repository is https://github.com/baddison2005/oled-window-guard-kde.
-Release v1.0.2 includes the complete source archive and source RPM alongside the binary RPM.
+Release v1.0.3 includes the complete source archive and source RPM alongside the binary RPM.

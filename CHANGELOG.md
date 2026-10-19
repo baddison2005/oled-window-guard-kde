@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.3 — 2026-10-19
+
+- Attach the existing live tray menu to Cairo-Dock, with independent Start/Pause labels for movement and brightness.
+- Grey out movement and brightness actions while their guard is paused, retaining controller safety checks.
+- Reconnect after dock/launcher reloads and remove duplicate fixed desktop-entry actions.
+- Isolate optional dock IPC from the dashboard process and detach on quit.
+
 ## 1.0.2 — 2026-10-19
 
 - About now checks GitHub for newer stable releases when requested.

@@ -7,10 +7,10 @@ import tarfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-OUTPUT = Path.cwd() / "oled-window-guard-1.0.2.tar.gz"
+OUTPUT = Path.cwd() / "oled-window-guard-1.0.3.tar.gz"
 INCLUDE = ("native/observer", "core", "tools", "oled_window_guard", "schema", "packages/desktop",
            "packages/kwin-script", "packaging/rpm", "packaging/licenses", "interfaces", "assets", "tests",
-           "LICENSE", "NOTICE", "SOURCE.md", "README.md", "CHANGELOG.md", "docs/RELEASE_REVIEW_v1.0.0.md", "docs/RELEASE_REVIEW_v1.0.1.md", "docs/RELEASE_REVIEW_v1.0.2.md")
+           "LICENSE", "NOTICE", "SOURCE.md", "README.md", "CHANGELOG.md", "docs/RELEASE_REVIEW_v1.0.0.md", "docs/RELEASE_REVIEW_v1.0.1.md", "docs/RELEASE_REVIEW_v1.0.2.md", "docs/RELEASE_REVIEW_v1.0.3.md")
 
 with OUTPUT.open("wb") as stream, gzip.GzipFile(fileobj=stream, mode="wb", filename="", mtime=0) as compressed:
     with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as archive:
@@ -21,7 +21,7 @@ with OUTPUT.open("wb") as stream, gzip.GzipFile(fileobj=stream, mode="wb", filen
                     raise ValueError(f"Source symlink is not permitted: {path}")
                 if not path.is_file() or "__pycache__" in path.parts or path.suffix == ".pyc":
                     continue
-                info = archive.gettarinfo(str(path), arcname=f"oled-window-guard-1.0.2/{path.relative_to(ROOT)}")
+                info = archive.gettarinfo(str(path), arcname=f"oled-window-guard-1.0.3/{path.relative_to(ROOT)}")
                 info.uid = info.gid = info.mtime = 0
                 info.uname = info.gname = ""
                 with path.open("rb") as member:

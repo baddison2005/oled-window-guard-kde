@@ -39,6 +39,7 @@ class DashboardTests(unittest.TestCase):
         self.assertFalse(self.window._reads)
 
     def tearDown(self):
+        self.window.dock_menu.stop()
         self.window._read_executor.shutdown(wait=True, cancel_futures=True)
         self.window.deleteLater()
         self.temp.cleanup()
@@ -135,6 +136,28 @@ class DashboardTests(unittest.TestCase):
         self.assertTrue(self.window.check_updates_button.isEnabled())
         self.assertFalse(self.window._upgrade_busy)
         self.assertEqual(self.calls, [])
+
+    def test_live_menu_tracks_independent_guards_and_disables_paused_actions(self):
+        self.window.settings['movementDisplays'] = ['DP-1']
+        self.window.set_displays([dict(id='DP-1',name='Display')])
+        base = dict(readiness='ready', resumeReady=True, movementResumeReady=True,
+                    brightnessResumeReady=True, canPause=True, movementReady=True,
+                    restoreAvailable=True, restoreOutputId='DP-1', capabilities=dict(restoreBrightness=True))
+        for movement, brightness in ((True,True),(True,False),(False,True),(False,False)):
+            with self.subTest(movementPaused=movement, brightnessPaused=brightness):
+                self.window.update_status(dict(base, paused=movement and brightness,
+                    movementPaused=movement, brightnessPaused=brightness))
+                self.assertEqual(self.window.tray_movement.text(), ('Start' if movement else 'Pause')+' movement guarding')
+                self.assertEqual(self.window.tray_brightness_guard.text(), ('Start' if brightness else 'Pause')+' brightness guarding')
+                self.assertEqual(self.window.tray_move.isEnabled(), not movement)
+                self.assertEqual(self.window.tray_restore.isEnabled(), not movement)
+                self.assertEqual(self.window.tray_brightness.isEnabled(), not brightness)
+                self.assertFalse(self.window.tray_skip.isEnabled())
+        self.window.update_status(dict(base, paused=False, movementPaused=False,
+            brightnessPaused=True, transactionActive=True, skipAvailable=True))
+        self.assertTrue(self.window.tray_skip.isEnabled())
+        self.window.update_status(dict(self.window.status, movementPaused=True))
+        self.assertFalse(self.window.tray_skip.isEnabled())
 
     def test_ready_actions_are_intents_and_restore_brightness_needs_capability(self):
         self.window.settings["movementDisplays"] = ["DP-1"]
