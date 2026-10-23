@@ -18,6 +18,7 @@ QtObject {
     property int maskCount:0
     property var shortcut:null
     property bool stopping:false
+    property var pendingDimOutputIds:[]
     function status() {
         var visible=0;
         for (var id in surfaces) if (surfaces[id].confirmed && surfaces[id].plane.visible) visible+=surfaces[id].masks.length;
@@ -36,7 +37,7 @@ QtObject {
     }
     function clear(reason) {
         for (var id in surfaces) surfaces[id].clear();
-        state.outputs={};maskCount=0;lastReason=reason;
+        state.outputs={};state.forcedDisplays={};pendingDimOutputIds=[];maskCount=0;lastReason=reason;
     }
     function retainOutputs(ids) {
         for(var id in surfaces)if(ids.indexOf(id)<0)surfaces[id].clear();
@@ -60,6 +61,19 @@ QtObject {
             });
         }
         state.restore=Timing.restoreDimmingBrightness(state.restore,now,delay);
+    }
+    function manualOutputs() {
+        const config=observer.planning.configuration;
+        if (!config || !healthy) return [];
+        return observer.runtime.activeOutputs("brightness").filter(function(id) {
+            const resolved=Options.resolveDimmingOptions(config.settings,id);
+            return resolved && resolved.options.display && resolved.options.displayAmount>0;
+        });
+    }
+    function dimNow(ids) {
+        const allowed=manualOutputs();
+        if (!ids.length || ids.some(function(id){return allowed.indexOf(id)<0;})) return false;
+        pendingDimOutputIds=ids.slice();pendingScope=null;tick();return true;
     }
     function pointerScope(type) {
         var snapshot=observer.capture(), point=Workspace.cursorPos;
@@ -116,6 +130,7 @@ QtObject {
             if (observer.warningSurface.activeGeneration>=0 && observer.warningSurface.targetGeometry)
                 event.windows.unshift({id:"owg-warning",frame:observer.warningSurface.targetGeometry,dimmable:false,displayDimmable:true});
             event.scopeEvent=pendingScope;pendingScope=null;
+            event.dimNowOutputIds=pendingDimOutputIds;pendingDimOutputIds=[];
             event.protectedWindowIds=protectedWindowIds;
             var result=Engine.updateDimming(state,event);state=result.state;
             if (result.reason==="invalid-input") throw new Error("invalid-dimming-input");

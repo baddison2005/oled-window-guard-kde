@@ -26,6 +26,8 @@ QtObject {
     }
     property QtObject runtime:QtObject {
         property bool enabled:probe.enabled
+        property bool brightnessEnabled:probe.enabled
+        function activeOutputs(kind){return probe.settings ? probe.settings.dimmingDisplays : [];}
         property bool busy:false
         function dimmingFacts(){return {safe:probe.safe};}
         function facts(quiet){return {safe:probe.safe};}
@@ -66,7 +68,15 @@ QtObject {
                     if (!dimming.maskCount || !probe.confirmed())return;
                     check(dimming.surfaces.A.masks.length===0,"focused monitor stays bright");
                     check(dimming.surfaces.B.masks.length===1 && dimming.surfaces.B.masks[0].amount===.4,"whole other monitor dimmed");
-                    dimming.restoreBrightness();check(dimming.maskCount===0 && probe.planes()===0,"synchronous brightness restore");probe.stage++;
+                    check(dimming.dimNow(["A"]),"manual selected display accepted");probe.stage=7;
+                } else if (probe.stage===7) {
+                    if (!dimming.maskCount || !probe.confirmed())return;
+                    check(dimming.surfaces.A.masks.length===1 && dimming.surfaces.A.masks[0].amount===.4,"manual dim covers focused display");
+                    check(dimming.surfaces.B.masks.length===1,"other display unaffected");
+                    dimming.pendingScope={type:"windowKey",displayId:"A"};dimming.tick();
+                    check(dimming.surfaces.A.masks.length===0 && dimming.surfaces.B.masks.length===1,"interaction clears only selected manual dim");
+                    check(dimming.dimNow(["A","B"]),"manual all guarded displays accepted");
+                    dimming.restoreBrightness();check(dimming.maskCount===0 && probe.planes()===0,"synchronous brightness restore");probe.stage=2;
                 } else if (probe.stage===2) {
                     check(dimming.maskCount===0,"restore hold");
                     if(probe.clock<stateUntil())return;

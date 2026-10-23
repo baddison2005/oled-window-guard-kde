@@ -6,7 +6,7 @@
 %{!?owg_native_prefix:%global owg_native_prefix /usr}
 
 Name:           oled-window-guard
-Version:        1.0.3
+Version:        1.0.4
 Release:        %{?owg_release}%{!?owg_release:1}%{?dist}
 Summary:        Window movement and software dimming for KDE Plasma
 License:        GPL-3.0-or-later AND MIT
@@ -116,6 +116,10 @@ fi
 %{_datadir}/kwin/scripts/%{kpackage_id}/
 
 %changelog
+* Fri Oct 23 2026 Dr. Brett Addison - 1.0.4-1
+- Preserve the companion-owned observer across KWin/Window Layouts reloads
+- Recover registered silent runtimes and add scoped manual monitor dimming
+
 * Mon Oct 19 2026 Dr. Brett Addison - 1.0.3-1
 - Reuse the live tray menu in Cairo-Dock with independent Start/Pause controls
 - Disable unavailable guard actions and remove duplicate fixed launcher actions

@@ -130,6 +130,7 @@ QtObject {
             movementActiveDisplays:activeOutputs("movement"),brightnessActiveDisplays:activeOutputs("brightness"),
             dimmingReady:dimmingSafety.safe && dimmingOutput && brightnessEnabled,restoreBrightness:observer.dimming.healthy && brightnessEnabled,
             dimming:observer.dimming.status(),
+            dimDisplayOutputs:brightnessEnabled && dimmingSafety.safe?observer.dimming.manualOutputs():[],
             nextMoveCheck:movementEnabled && !busy?Scheduler.nextCheck(scheduler,schedulerNow()):null,
             busy:busy,skipAvailable:warning.activeGeneration>=0,restoreAvailable:ready && movementEnabled && !busy && !!undo,
             restoreOutputId:undo?undo.plan.outputIds[0]:null,
@@ -194,6 +195,11 @@ QtObject {
         if (command.action==="RestoreBrightness") {
             observer.dimming.restoreBrightness()
             commandReport={id:command.id,status:"completed",reason:null};return
+        }
+        if (command.action==="DimDisplayNow" || command.action==="DimAllDisplaysNow") {
+            const ids=command.action==="DimDisplayNow"?[command.outputId]:observer.dimming.manualOutputs();
+            const permitted=brightnessEnabled && dimmingFacts().safe && observer.dimming.dimNow(ids);
+            commandReport={id:command.id,status:permitted?"completed":"rejected",reason:permitted?null:"dimming-unavailable"};return;
         }
         if (command.action==="Skip") {
             observer.warningSurface.onSkip()

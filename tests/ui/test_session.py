@@ -45,6 +45,23 @@ class SessionTests(unittest.TestCase):
         self.assertTrue(self.host.submit("Pause")["ok"])
         self.assertTrue(preferences.load_settings(self.path).values["paused"])
 
+    def test_manual_dimming_requires_live_brightness_scope_and_preserves_preview(self):
+        self.select_output()
+        preferences.save_settings(self.path,dict(preferences.load_settings(self.path).values,
+            paused=False,dimDisplays=True,dimmingDisplays=['DP-1']))
+        self.product_exchange(2,armed=True,brightnessArmed=True,restoreBrightness=True,
+                              dimDisplayOutputs=['DP-1'])
+        self.host.preview_pending='retained-preview';self.host.preview_started=time.monotonic()
+        self.assertFalse(self.host.submit('DimDisplayNow',{'outputId':'other'})['ok'])
+        self.assertTrue(self.host.submit('DimDisplayNow',{'outputId':'DP-1'})['ok'])
+        self.assertEqual(self.host.runtime_command['outputId'],'DP-1')
+        self.assertEqual(self.host.preview_pending,'retained-preview')
+        self.assertEqual(self.host.submit('DimAllDisplaysNow')['reason'],'runtime-busy')
+        self.host.runtime_pending=None
+        self.assertTrue(self.host.submit('DimAllDisplaysNow')['ok'])
+        self.host.status['brightnessPaused']=True
+        self.assertEqual(self.host.submit('DimAllDisplaysNow')['reason'],'capability-unavailable')
+
     def test_minimized_startup_stays_paused_and_explicit_open_restores(self):
         values = dict(preferences.defaults(), startMinimized=True, resumeAfterUnlock=True, paused=False)
         preferences.save_settings(self.path, values)

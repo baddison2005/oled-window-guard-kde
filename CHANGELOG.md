@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.4 — 2026-10-23
+
+- Keep the companion-owned compositor runtime separate from the disabled KWin package toggle, preserving guards across Window Layouts saves and KWin reconfiguration.
+- Recover registered but silent runtimes and retry failed starts without requiring a dashboard restart. Unexpected runtime loss recovers paused.
+- Add Dim selected display now and Dim all guarded displays now to the live tray and Cairo-Dock menus. Respect brightness scope, monitor settings and app exemptions; interaction or Restore Brightness clears manual dimming.
+- Put Care for your OLED on its own subtitle line.
+
 ## 1.0.3 — 2026-10-19
 
 - Attach the existing live tray menu to Cairo-Dock, with independent Start/Pause labels for movement and brightness.

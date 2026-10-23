@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from oled_window_guard.adapter import AdapterLifetime, PLUGIN, installed_adapter
+from oled_window_guard.adapter import AdapterLifetime, PLUGIN, RUNTIME_PLUGIN, installed_adapter
 
 class AdapterLifetimeTests(unittest.TestCase):
     def test_removed_owned_adapter_pauses_before_reloading(self):
@@ -32,6 +32,7 @@ class AdapterLifetimeTests(unittest.TestCase):
              patch.object(lifetime,'start') as start:
             self.assertIn('Cannot pause',lifetime.recover(lambda: {'ok':False}))
             start.assert_not_called()
+        lifetime.retry_at=0
         with patch.object(lifetime,'interface',return_value=Interface()), \
              patch.object(lifetime,'value',side_effect=RuntimeError('bus unavailable')), \
              patch.object(lifetime,'start') as start:
@@ -46,6 +47,26 @@ class AdapterLifetimeTests(unittest.TestCase):
         lifetime.owned=True
         with patch.object(lifetime,'interface'), patch.object(lifetime,'value',return_value=True):
             self.assertIsNone(lifetime.recover(lambda: self.fail('unexpected pause')))
+
+    def test_registered_but_silent_adapter_is_replaced_and_retry_survives_failed_start(self):
+        lifetime=AdapterLifetime();lifetime.owned=True
+        events=[]
+        with patch.object(lifetime,'interface'),patch.object(lifetime,'value',return_value=True), \
+             patch.object(lifetime,'start',side_effect=lambda:events.append('reload')):
+            lifetime.recover(lambda:events.append('pause') or {'ok':True},heartbeat_healthy=False)
+        self.assertEqual(events,['pause','reload'])
+        lifetime.owned=False;lifetime.requested=True;lifetime.retry_at=0
+        with patch.object(lifetime,'interface'),patch.object(lifetime,'value',return_value=False), \
+             patch.object(lifetime,'start',return_value='startup failed') as start:
+            self.assertEqual(lifetime.recover(lambda:{'ok':True}),'startup failed')
+            self.assertIsNone(lifetime.recover(lambda:self.fail('retry storm')))
+            self.assertEqual(start.call_count,1)
+
+    def test_fresh_contact_avoids_blocking_bus_probes_on_gui_thread(self):
+        lifetime=AdapterLifetime();lifetime.owned=True
+        with patch.object(lifetime,'interface') as bus:
+            self.assertIsNone(lifetime.recover(lambda:self.fail('unexpected pause'),heartbeat_healthy=True))
+            bus.assert_not_called()
 
     def test_only_complete_installed_package_is_discovered(self):
         with tempfile.TemporaryDirectory() as folder, patch.dict(os.environ, {
@@ -77,7 +98,7 @@ class AdapterLifetimeTests(unittest.TestCase):
             self.assertTrue(lifetime.owned)
             lifetime.stop()
         self.assertEqual([method for method,args in calls],
-            ['isScriptLoaded','unloadScript','isScriptLoaded','loadDeclarativeScript','run','unloadScript'])
+            ['isScriptLoaded','unloadScript','isScriptLoaded','isScriptLoaded','loadDeclarativeScript','start','unloadScript'])
         self.assertFalse(lifetime.owned)
 
     def test_stale_adapter_removal_failure_never_loads_a_second_observer(self):
@@ -129,7 +150,7 @@ class AdapterLifetimeTests(unittest.TestCase):
                 message.MessageType.ErrorMessage=1
                 original=Interface.call
                 def call(self, method, *args):
-                    if method=='run':
+                    if method=='start':
                         from types import SimpleNamespace
                         calls.append((method,args))
                         return SimpleNamespace(type=lambda:1)
@@ -137,7 +158,7 @@ class AdapterLifetimeTests(unittest.TestCase):
                 with patch.object(Interface,'call',call):
                     self.assertIn('refused', lifetime.start())
             self.assertFalse(lifetime.owned)
-        self.assertEqual(calls[-1], ('unloadScript',(PLUGIN,)))
+        self.assertEqual(calls[-1], ('unloadScript',(RUNTIME_PLUGIN,)))
 
 if __name__=='__main__':
     unittest.main()

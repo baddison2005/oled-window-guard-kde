@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 
 from PySide6.QtCore import QCoreApplication, QTimer
 
@@ -45,7 +46,8 @@ def main(argv: list[str] | None = None) -> int:
         adapter_watch = QTimer(app)
         adapter_watch.setInterval(2000)
         def recover_adapter():
-            reason = adapter.recover(lambda: host.submit("Pause"))
+            reason = adapter.recover(lambda: host.submit("Pause"),
+                heartbeat_healthy=bool(host.observer_seen and time.monotonic()-host.observer_seen < 3))
             if reason:
                 host.status["suspendedReasons"] = [reason]
                 host.dashboard.update_status(host.status)

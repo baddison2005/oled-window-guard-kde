@@ -138,3 +138,34 @@ event.windows[0].frame.x+=10;event.nowMs=1600;
 assert.ok(step(event).masks.some(m=>m.frame.x===10));
 assert.deepEqual(state.outputs.A.windowDelay.since,beforeMove);
 console.log('PASS mask follows geometry without restarting dimming delay');
+
+// Manual dim skips the activation delay and focus exemption only for its
+// selected output. Other outputs retain their clocks and restore holds.
+state=Engine.createDimmingState();event=base();event.focusedFrame=rect(0,0,500,400);event.focusedWindowId='w';event.focusedDisplayId='A';
+event.dimNowOutputIds=['A'];step(event);
+event.dimNowOutputIds=[];event.nowMs=500;result=step(event);
+assert.ok(result.masks.some(m=>m.outputId==='A' && m.wholeDisplay && m.amount>0));
+assert.ok(result.masks.every(m=>m.outputId!=='B'));
+event.scopeEvent={type:'windowKey',displayId:'B'};event.nowMs=600;result=step(event);
+assert.ok(result.masks.some(m=>m.outputId==='A'));
+event.scopeEvent={type:'windowKey',displayId:'A'};event.nowMs=650;result=step(event);
+assert.ok(result.masks.every(m=>m.outputId!=='A'));
+state=Engine.createDimmingState();event=base();event.restoreBrightness=true;step(event);
+event.restoreBrightness=false;event.dimNowOutputIds=['A'];event.nowMs=100;step(event);
+event.dimNowOutputIds=[];event.nowMs=1200;result=step(event);
+assert.ok(result.masks.some(m=>m.outputId==='A' && m.wholeDisplay));
+assert.ok(result.masks.every(m=>m.outputId!=='B'));
+event.restoreBrightness=true;event.nowMs=1300;result=step(event);
+assert.equal(result.masks.length,0);assert.equal(Object.keys(state.forcedDisplays).length,0);
+event.restoreBrightness=false;event.dimNowOutputIds=['A','B'];event.nowMs=1400;step(event);
+event.dimNowOutputIds=[];event.nowMs=2500;result=step(event);
+assert.ok(['A','B'].every(id=>result.masks.some(m=>m.outputId===id && m.wholeDisplay)));
+event.status.paused=true;result=step(event);
+assert.equal(result.masks.length,0);assert.equal(Object.keys(state.forcedDisplays).length,0);
+// Starting manual monitor dimming must not flash already-dimmed windows bright.
+state=Engine.createDimmingState();event=base();event.selectedOutputIds=['A'];
+event.focusedFrame=rect(400,0,100,400);event.focusedWindowId='focus';event.focusedDisplayId='A';
+step(event);event.nowMs=2500;step(event);event.nowMs=3600;result=step(event);
+assert.ok(result.masks.some(m=>m.outputId==='A' && m.amount===.3));
+event.dimNowOutputIds=['A'];event.nowMs=3700;result=step(event);
+assert.ok(result.masks.some(m=>m.outputId==='A' && m.amount>=.3));

@@ -80,29 +80,57 @@ def worker(root):
                                 env=env,stdout=dashboard_log,stderr=subprocess.STDOUT)
     try:
         wait(lambda:present('org.kde.KWin'))
-        assert not scripting('isScriptLoaded','oled-window-guard-adapter')
+        assert not scripting('isScriptLoaded','oled-window-guard-runtime')
+        # Deliberately create the KWin list-length/script-ID collision that
+        # occurs when another application's scripts are removed/reloaded.
+        sentinel=root/'sentinel.qml';sentinel.write_text('import QtQuick\nQtObject {}\n')
+        for name in ('owg-sentinel-a','owg-sentinel-b','owg-sentinel-c'):
+            index=scripting('loadDeclarativeScript',str(sentinel),name)
+            call('org.kde.KWin','/Scripting/Script'+str(index),'org.kde.kwin.Script','run')
+        assert scripting('unloadScript','owg-sentinel-a')
+        wait(lambda:not scripting('isScriptLoaded','owg-sentinel-a'))
         dashboard=launch();wait(live);record('retained-unpaused-settings-starts-paused')
+        record('startup-with-existing-script-id-collision')
         owner=observations[-1]['controllerOwner']
         duplicate=subprocess.run([sys.executable,'-m','oled_window_guard','open'],cwd=root,env=env,
                                  stdout=dashboard_log,stderr=subprocess.STDOUT,timeout=10)
         assert duplicate.returncode==0
         assert bus.interface().serviceOwner(SERVICE).value()==owner
         record('duplicate-open-keeps-controller-owner')
+        epoch=status().get('observerEpoch');settings_before=settings.read_bytes()
+        for cycle in range(3):
+            call('org.kde.KWin','/KWin','org.kde.KWin','reconfigure')
+            scripting('start')
+            end=time.monotonic()+.4
+            while time.monotonic()<end:app.processEvents();time.sleep(.03)
+            wait(live)
+            assert status().get('observerEpoch')==epoch
+            assert settings.read_bytes()==settings_before
+        record('global-reconfigure-and-start-preserve-observer-and-settings')
+        # Registration alone is not a heartbeat. Replace the runtime with a
+        # silent QtObject and verify bounded recovery with the same controller.
+        assert scripting('unloadScript','oled-window-guard-runtime')
+        wait(lambda:not scripting('isScriptLoaded','oled-window-guard-runtime'))
+        silent=root/'silent.qml';silent.write_text('import QtQuick\nQtObject {}\n')
+        index=scripting('loadDeclarativeScript',str(silent),'oled-window-guard-runtime')
+        call('org.kde.KWin','/Scripting/Script'+str(index),'org.kde.kwin.Script','run')
+        wait(lambda:status().get('observerEpoch')!=epoch and live(),seconds=18)
+        record('registered-silent-runtime-recovered-paused')
         # An abrupt controller exit leaves its KWin script alive. Reopening
         # must replace that orphan, rather than adopting old dimming code and
         # losing ownership of its eventual Quit cleanup.
         orphan_epoch=status().get('observerEpoch')
         dashboard.kill();dashboard.wait(timeout=10)
         wait(lambda:not present(SERVICE))
-        assert scripting('isScriptLoaded','oled-window-guard-adapter') is True
+        assert scripting('isScriptLoaded','oled-window-guard-runtime') is True
         dashboard=launch()
         wait(lambda:live() and bool(status().get('observerEpoch')) and status()['observerEpoch']!=orphan_epoch)
         expected_main=package/'contents'/json.loads((package/'contents/runtime-build.json').read_text())['main']
         assert Path(status()['adapterSource'].removeprefix('file://')).resolve()==expected_main.resolve()
         record('orphaned-adapter-replaced-with-fresh-installed-code-paused')
         owner=observations[-1]['controllerOwner']
-        assert scripting('unloadScript','oled-window-guard-adapter') is True
-        wait(lambda:scripting('isScriptLoaded','oled-window-guard-adapter') is True)
+        assert scripting('unloadScript','oled-window-guard-runtime') is True
+        wait(lambda:scripting('isScriptLoaded','oled-window-guard-runtime') is True)
         wait(live);record('owned-adapter-unload-recovery-paused')
         assert bus.interface().serviceOwner(SERVICE).value()==owner
         assert preferences.load_settings(settings).values['paused'] is True
@@ -134,12 +162,12 @@ def worker(root):
             record('cancelled-upgrade-unloads-runtime-and-reopens-paused-with-settings-preserved')
         intent('Quit');wait(lambda:not present(SERVICE))
         dashboard.wait(timeout=10);assert dashboard.returncode==0
-        assert not scripting('isScriptLoaded','oled-window-guard-adapter')
+        assert not scripting('isScriptLoaded','oled-window-guard-runtime')
         observations.append(dict(case='quit-removes-controller-and-owned-adapter'))
         dashboard=launch();wait(live);record('reopen-new-controller-paused')
         assert observations[-1]['controllerOwner']!=owner
         intent('Quit');wait(lambda:not present(SERVICE));dashboard.wait(timeout=10)
-        assert not scripting('isScriptLoaded','oled-window-guard-adapter')
+        assert not scripting('isScriptLoaded','oled-window-guard-runtime')
         final_hashes={str(p.relative_to(root/'payload')):hashlib.sha256(p.read_bytes()).hexdigest()
                       for p in (root/'payload').rglob('*') if p.is_file()}
         assert final_hashes==initial_hashes,'Test must not modify RPM payload'

@@ -98,24 +98,24 @@ Check the installed package and GitHub for a newer compatible release.
 
 ## Supported system
 
-The v1.0.3 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.7.5 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
+The v1.0.4 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.7.5 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
 
 The native observer uses version-specific KWin interfaces. The RPM deliberately requires the matching KWin and Qt versions; it is not a generic package for every Plasma release or distribution. A system update to different KWin/Qt versions requires a compatible OWG build. XWayland application windows are supported inside the tested Wayland session; an X11 desktop session is not supported.
 
 ## Install
 
-1. Download `oled-window-guard-1.0.3-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.3](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.3).
+1. Download `oled-window-guard-1.0.4-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.4](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.4).
 2. In the download directory, verify the RPM checksum against `SHA256SUMS`:
 
    ```sh
-   sha256sum oled-window-guard-1.0.3-1.fc44.x86_64.rpm
+   sha256sum oled-window-guard-1.0.4-1.fc44.x86_64.rpm
    ```
 
 3. Quit an existing OWG session, then install:
 
    ```sh
    oled-window-guard quit  # Only needed if OWG is already running.
-   sudo dnf install ./oled-window-guard-1.0.3-1.fc44.x86_64.rpm
+   sudo dnf install ./oled-window-guard-1.0.4-1.fc44.x86_64.rpm
    ```
 
 4. Open **OLED Window Guard** from the application launcher, or run `oled-window-guard open`.
@@ -148,6 +148,8 @@ While OWG is running, right-click its application icon in Cairo-Dock for the sam
 
 Movement and brightness labels follow their independent guard states. Move Now, Skip and Restore previous position are disabled while movement is paused; Restore Brightness is disabled while brightness is paused. Availability also follows the controller's safety checks: Skip requires an active warning and Restore requires a verified last move. The menu updates from the same actions as the dashboard/tray.
 
+**Dim selected display now** uses Overview’s selected display. **Dim all guarded displays now** applies to every connected display with active brightness guarding and monitor dimming enabled. Both skip the activation delay, use each display’s configured darkness and fade, and preserve app exemptions. They can dim a display with focused content. Interaction on that display, Restore Brightness, pausing, locking or runtime loss clears the manual effect. Brightness guarding must be active.
+
 Move Now uses the display selected in Overview when it is still selected for movement and connected, otherwise the first connected movement display. All existing warnings, capability checks and stale-plan refusals apply.
 
 This integration requires Cairo-Dock's **D-Bus plug-in** with **SetMenu/libdbusmenu** support and the Plasma status notifier host. It is optional: the tray and dashboard work without it. OWG reconnects after a dock restart or launcher reload. When OWG is closed, clicking its icon opens it normally; a live guarding menu requires the app to be running. Fixed desktop-entry actions were removed to avoid duplicate controls. Other launchers continue to open OWG normally.
@@ -167,6 +169,8 @@ Full-screen, maximized, minimized, modal, unsupported and spanning windows may b
 Dimming uses compositor overlays, not hardware brightness controls. Window and display darkness do not add together. Exempt app areas remain bright; a whole-display effect covers the movement warning. **Restore brightness** grants at least five seconds of brightness, respecting longer configured delays. Manual pauses remain paused across unlock/wake; resumption requires the corresponding option and previously active guarding. A disconnected target leaves its guard scope; reconnecting it does not automatically arm new work.
 
 Movement and dimming cannot guarantee prevention of image retention or OLED burn-in. Keep your display's built-in care and sleep features enabled.
+
+Saving Window Layouts layouts, groups or application mappings can reconfigure KWin. OWG’s companion-owned runtime remains loaded through those ordinary saves; guard state and timers continue. Actual runtime removal or lost heartbeats cancel pending work and recover paused, with stale Restore authority discarded.
 
 ## Settings, privacy and troubleshooting
 
@@ -198,7 +202,7 @@ python3 -m unittest discover -s tests/packaging
 
 `tests/integration/run_*.py` contains separate private-compositor and physical acceptance runners. They are not part of the unit-test commands above; read their prerequisites before running them. Some historical DNF/signing rehearsal runners require private development artifacts that are not included in this repository.
 
-See the [v1.0.3 review](docs/RELEASE_REVIEW_v1.0.3.md) and [changelog](CHANGELOG.md) for release scope and validation.
+See the [v1.0.4 review](docs/RELEASE_REVIEW_v1.0.4.md) and [changelog](CHANGELOG.md) for release scope and validation.
 
 ## License
 

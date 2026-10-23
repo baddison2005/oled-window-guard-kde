@@ -112,9 +112,9 @@ def worker(root, app_root):
         child=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),'--gui',str(root),'--app-root',str(app_root)],env=env,stdout=gui_log,stderr=subprocess.STDOUT)
         wait(lambda:bool(attachments))
         wait(lambda:'Start movement guarding' in menu())
-        m=menu();assert len(m)==9,m
+        m=menu();assert len(m)==11,m
         assert 'Start brightness guarding' in m and 'Start selected guarding' in m
-        for title in ['Move Now','Skip','Restore previous position','Restore Brightness']:assert not m[title]['enabled'],m
+        for title in ['Move Now','Skip','Restore previous position','Restore Brightness','Dim selected display now','Dim all guarded displays now']:assert not m[title]['enabled'],m
         cases.append('both-paused-start-labels-and-disabled-actions')
         # Activate a real exported Qt menu item; the injected GUI client records
         # the intent without loading any writer or real movement controller.
@@ -127,9 +127,15 @@ def worker(root, app_root):
         wait(lambda:'Pause movement guarding' in menu())
         m=menu();assert m['Move Now']['enabled'] and not m['Restore Brightness']['enabled']
         cases.append('movement-active-brightness-paused')
-        state(paused=False,brightnessPaused=False,capabilities=dict(restoreBrightness=True))
+        state(paused=False,brightnessPaused=False,dimDisplayOutputs=['DP-1'],capabilities=dict(restoreBrightness=True))
         wait(lambda:'Pause brightness guarding' in menu() and 'Start movement guarding' in menu())
         m=menu();assert not m['Move Now']['enabled'] and m['Restore Brightness']['enabled']
+        assert m['Dim selected display now']['enabled'] and m['Dim all guarded displays now']['enabled']
+        for title,action,payload in [('Dim selected display now','DimDisplayNow',{'outputId':'DP-1'}),('Dim all guarded displays now','DimAllDisplaysNow',{})]:
+            bus.get_object(service,path).Event(dbus.Int32(m[title]['id']),'clicked',dbus.Int32(0),dbus.UInt32(0),dbus_interface='com.canonical.dbusmenu')
+            wait(lambda:json.loads((root/'intents.jsonl').read_text().splitlines()[-1])['action']==action)
+            assert json.loads((root/'intents.jsonl').read_text().splitlines()[-1])['payload']==payload
+        cases.append('manual-dimming-actions-dispatch-selected-and-all-scopes')
         cases.append('brightness-active-movement-paused')
         state(paused=False,movementPaused=False,brightnessPaused=False,movementReady=True,
             transactionActive=True,skipAvailable=True,capabilities=dict(restoreBrightness=True))

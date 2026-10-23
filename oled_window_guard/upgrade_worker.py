@@ -48,9 +48,17 @@ class SessionBridge:
                 raise RuntimeError('OWG did not finish closing; the upgrade was not started')
             self.app.processEvents()
             time.sleep(.05)
-        loaded = self.call('org.kde.KWin', '/Scripting', 'org.kde.kwin.Scripting', 'isScriptLoaded', 'oled-window-guard-adapter')
-        if loaded is not False:
-            raise RuntimeError('The previous compositor runtime did not unload; the upgrade was not started')
+        from .adapter import PLUGIN, RUNTIME_PLUGIN
+        until = time.monotonic() + 5
+        while True:
+            loaded = [self.call('org.kde.KWin', '/Scripting', 'org.kde.kwin.Scripting',
+                                'isScriptLoaded', name) for name in (PLUGIN, RUNTIME_PLUGIN)]
+            if all(value is False for value in loaded):
+                break
+            if time.monotonic() >= until:
+                raise RuntimeError('The previous compositor runtime did not unload; the upgrade was not started')
+            self.app.processEvents()
+            time.sleep(.05)
 
 
 def install_rpm(path):
