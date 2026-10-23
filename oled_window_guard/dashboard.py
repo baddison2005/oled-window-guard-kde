@@ -320,7 +320,7 @@ class Dashboard(QMainWindow):
         self.next_move_label.setToolTip("Each selected display has its own interval. When due, OWG waits for safe conditions and eligible windows before showing a movement warning.")
         layout.addWidget(self.next_move_label)
         form = self._card(layout, "Movement preview", "Review current positions and destinations. The warning checks the proposal again after grace; the writer revalidates it before moving.")
-        self.preview_display = QComboBox(); self.preview_display.setAccessibleName("Display for preview, move and restore")
+        self.preview_display = QComboBox(); self.preview_display.setAccessibleName("Display for preview and movement")
         self.preview_display.currentIndexChanged.connect(self._preview_display_changed)
         form.addRow("Display", self.preview_display)
         self.movement_preview = MovementPreview(); form.addRow(self.movement_preview)
@@ -609,7 +609,7 @@ class Dashboard(QMainWindow):
 
     def _build_about(self) -> None:
         layout = self._page("About", "Keep your windows moving.\nCare for your OLED.")
-        form = self._card(layout, "OLED Window Guard 1.0.5 · Dr. Brett Addison")
+        form = self._card(layout, "OLED Window Guard 1.0.6 · Dr. Brett Addison")
         self.about_text = self._help(form, "Guarded movement and software dimming for your desktop. Original KDE implementation: GNU GPL version 3 or later. Shared schema and interfaces: MIT. Third-party components retain their own licences.")
         self._help(form, "OWG is provided without warranty. It cannot guarantee prevention of image retention or burn-in. The supported package targets Fedora 44, KWin 6.7.5 and Qt 6.11.2. Enable Resume guarding after unlock or wake in Safety & alerts to continue previously active guarding after a session interruption.")
         self.package_update_label = self._help(form, "")
@@ -983,7 +983,10 @@ class Dashboard(QMainWindow):
         self.preview_display.setEnabled(status.get("transactionActive") is not True and not planning_busy)
         self.move_now_button.setEnabled(selected and ("movementActiveDisplays" not in status or self.preview_display.currentData() in status["movementActiveDisplays"]) and ready and not movement_paused and not planning_busy and status.get("movementReady") is True and status.get("transactionActive") is not True)
         self.skip_button.setEnabled(not movement_paused and status.get("transactionActive") is True and status.get("skipAvailable") is True)
-        self.restore_button.setEnabled(selected and self.preview_display.currentData() == status.get("restoreOutputId") and ready and not movement_paused and not planning_busy and status.get("transactionActive") is not True and status.get("restoreAvailable") is True)
+        restore_output=status.get("restoreOutputId")
+        restore_display=next((d for d in self._displays if d.get("id")==restore_output),None)
+        restore_selected=restore_display is not None and restore_output in self.settings["movementDisplays"]
+        self.restore_button.setEnabled(restore_selected and restore_output in status.get("movementActiveDisplays",self.settings["movementDisplays"]) and ready and not movement_paused and not planning_busy and status.get("transactionActive") is not True and status.get("restoreAvailable") is True)
         self.restore_brightness_button.setEnabled(status.get("brightnessPaused") is not True and caps.get("restoreBrightness") is True)
         self.dimming_brightness_button.setEnabled(self.restore_brightness_button.isEnabled())
         self.preview_button.setEnabled(status.get("planningReady") is True and status.get("transactionActive") is not True and
@@ -997,6 +1000,8 @@ class Dashboard(QMainWindow):
         self.tray_open.setEnabled(True)
         self.tray_skip.setEnabled(self.skip_button.isEnabled())
         self.tray_restore.setEnabled(self.restore_button.isEnabled())
+        restore_name=self._menu_display_name(restore_display) if restore_display else None
+        self.tray_restore.setText("Restore previous position"+(f" — {restore_name}" if restore_name and status.get("restoreAvailable") is True else ""))
         restoring=status.get("restoreBrightnessOutputs", []) if status.get("brightnessPaused") is False else []
         self.tray_brightness.setEnabled(self.restore_brightness_button.isEnabled() and bool(restoring))
         dim_outputs=status.get("dimDisplayOutputs", []) if status.get("brightnessPaused") is False else []
@@ -1013,7 +1018,7 @@ class Dashboard(QMainWindow):
             (self.pause_resume_button,"Start or pause guarding on selected displays.","Select a movement or dimming display and wait for compositor readiness. Release held input; click and release on each desktop after startup if needed."),
             (self.move_now_button,"Start a warning on the display selected in Overview.","Start guarding, select a movement display, and wait for any current plan or warning to finish."),
             (self.skip_button,"Cancel the current warning without pausing guarding.","Skip is available during a movement or restore warning."),
-            (self.restore_button,"Warn, then undo the last move if its windows still match.","Select the display of the last successful move. Manual moves or resizing can make Restore unavailable."),
+            (self.restore_button,f"Warn, then restore the most recent move on {restore_name}. Overview switches to that monitor. Windows must still match the saved move.","Restore follows the most recent verified move on any guarded monitor. Manual moves or resizing can make it unavailable."),
             (self.restore_brightness_button,"Clear dimming temporarily on all selected displays.","Requires an armed, available dimming renderer."),
             (self.preview_button,"Calculate a plan without moving windows.","Choose a selected movement display and wait for the planner to become available.")):
             button.setToolTip(enabled_text if button.isEnabled() else disabled_text)
@@ -1027,6 +1032,12 @@ class Dashboard(QMainWindow):
         action = "Pause" if self.status.get("paused") is False else "Resume"
         self._send(action)
 
+    @staticmethod
+    def _menu_display_name(display) -> str:
+        name=str(display.get("name") or display["id"])
+        connector=display.get("connector")
+        return name+f" · {connector}" if connector and connector not in name else name
+
     def _monitor_menu_actions(self, actions, before, label, intent, selected, enabled) -> None:
         displays=[d for d in self._displays if d.get("id") in selected]
         ids={d["id"] for d in displays}
@@ -1039,9 +1050,7 @@ class Dashboard(QMainWindow):
                 item=QAction(self.tray_menu)
                 item.triggered.connect(lambda checked=False, target=output, command=intent:self._send(command,target))
                 self.tray_menu.insertAction(before,item);actions[output]=item
-            name=str(display.get("name") or output)
-            connector=display.get("connector")
-            if connector and connector not in name:name+=f" · {connector}"
+            name=self._menu_display_name(display)
             actions[output].setText(f"{label} — {name}")
             actions[output].setEnabled(bool(enabled(output)))
 
@@ -1061,8 +1070,11 @@ class Dashboard(QMainWindow):
             allowed["Pause"+kind]=button.isEnabled() and self.status.get(kind.lower()+"Paused",self.status.get("paused")) is False
         if not allowed.get(action, False): return
         if action == "Open": self.showNormal(); self.raise_(); self.activateWindow()
+        if action == "Restore":
+            output_id=self.status["restoreOutputId"]
+            self.preview_display.setCurrentIndex(self.preview_display.findData(output_id))
         try:
-            payload={"outputId":output_id} if output_id is not None else {"outputId": self.preview_display.currentData()} if action in ("PlanPreview", "MoveNow", "Restore") else {}
+            payload={"outputId":output_id} if output_id is not None else {"outputId": self.preview_display.currentData()} if action in ("PlanPreview", "MoveNow") else {}
             response = self.intent_client.submit(action,payload)
             if isinstance(response, Mapping) and response.get("ok") is True and isinstance(response.get("status"), Mapping):
                 self.update_status(response["status"])

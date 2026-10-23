@@ -6,7 +6,7 @@
 %{!?owg_native_prefix:%global owg_native_prefix /usr}
 
 Name:           oled-window-guard
-Version:        1.0.5
+Version:        1.0.6
 Release:        %{?owg_release}%{!?owg_release:1}%{?dist}
 Summary:        Window movement and software dimming for KDE Plasma
 License:        GPL-3.0-or-later AND MIT
@@ -116,6 +116,10 @@ fi
 %{_datadir}/kwin/scripts/%{kpackage_id}/
 
 %changelog
+* Fri Oct 23 2026 Dr. Brett Addison - 1.0.6-1
+- Restore the last verified move independently of the Overview display
+- Name the restore monitor in menus and select it for the restore preview
+
 * Fri Oct 23 2026 Dr. Brett Addison - 1.0.5-1
 - Name monitor targets in movement, dimming and brightness restore menus
 - Preserve dimming through shell menus and support per-monitor restore holds

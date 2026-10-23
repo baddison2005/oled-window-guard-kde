@@ -273,15 +273,38 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.calls[-1],("Restore",{"outputId":"DP-1"}))
         self.window.preview_display.setCurrentIndex(1)
         self.assertIsNone(self.window.movement_preview.data)
-        self.assertFalse(self.window.restore_button.isEnabled())
-        self.window._send("Restore")
+        self.assertTrue(self.window.restore_button.isEnabled())
         self.window._send("MoveNow")
         self.assertEqual(self.calls[-1],("MoveNow",{"outputId":"HDMI-1"}))
+        self.window._send("Restore")
+        self.assertEqual(self.calls[-1],("Restore",{"outputId":"DP-1"}))
+        self.assertEqual(self.window.preview_display.currentData(),"DP-1")
         self.window.update_status(dict(status,transactionActive=True))
         self.assertFalse(self.window.preview_button.isEnabled())
         self.assertFalse(self.window.preview_display.isEnabled())
         self.window.update_status(dict(status,planningResult=dict(status="discarded",moves=0)))
+        self.window.preview_display.setCurrentIndex(1)
         self.assertIsNone(self.window.movement_preview.data)
+
+    def test_restore_follows_latest_monitor_independently_of_overview(self):
+        ids=['DP-1','HDMI-1']
+        self.window.settings['movementDisplays']=ids[:]
+        self.window.set_displays([dict(id='DP-1',name='LG'),dict(id='HDMI-1',name='HDMI')])
+        status=dict(readiness='ready',paused=False,movementPaused=False,movementReady=True,
+                    movementActiveDisplays=ids,restoreAvailable=True,transactionActive=False,restoreOutputId='DP-1')
+        for target,other,name in [('DP-1','HDMI-1','LG'),('HDMI-1','DP-1','HDMI')]:
+            self.window.preview_display.setCurrentIndex(self.window.preview_display.findData(other))
+            self.window.update_status(dict(status,restoreOutputId=target))
+            self.assertTrue(self.window.restore_button.isEnabled())
+            self.assertTrue(self.window.tray_restore.isEnabled())
+            self.assertEqual(self.window.tray_restore.text(),'Restore previous position — '+name)
+            self.window.tray_restore.trigger()
+            self.assertEqual(self.calls[-1],('Restore',{'outputId':target}))
+            self.assertEqual(self.window.preview_display.currentData(),target)
+        for changes in [dict(transactionActive=True),dict(movementPaused=True),dict(restoreAvailable=False),
+                        dict(restoreOutputId='disconnected'),dict(movementActiveDisplays=[])]:
+            self.window.update_status(dict(status,**changes))
+            self.assertFalse(self.window.tray_restore.isEnabled())
 
     def test_preview_snapshot_survives_invalidation_and_can_be_refreshed(self):
         self.window.settings["movementDisplays"]=["DP-1"]

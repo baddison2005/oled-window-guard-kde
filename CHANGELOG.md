@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.6 — 2026-10-23
+
+- Make Restore last move and the shared Restore previous position menu action follow the most recent verified move on any monitor, independently of Overview selection.
+- Name that monitor in the menu and switch Overview to it when restoring so the restore preview is visible.
+- Retain one verified last-move record and all existing writer, geometry, guarding and warning checks.
+
 ## 1.0.5 — 2026-10-23
 
 - Name individual monitors in Move now, Dim now and Restore brightness menu actions; targets are independent of Overview selection.

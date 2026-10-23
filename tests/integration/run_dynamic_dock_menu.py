@@ -150,6 +150,15 @@ def worker(root, app_root):
             assert json.loads((root/'intents.jsonl').read_text().splitlines()[-1])['payload']==payload
         cases.append('named-monitor-move-dim-and-restore-actions-dispatch-exact-and-all-scopes')
         cases.append('brightness-active-movement-paused')
+        for target,label in [('HDMI-A-1','HDMI · HDMI-A-1'),('DP-1','LG · DP-1')]:
+            state(paused=False,movementPaused=False,movementReady=True,restoreAvailable=True,restoreOutputId=target)
+            title='Restore previous position — '+label
+            wait(lambda:menu().get(title,{}).get('enabled'))
+            previous=len((root/'intents.jsonl').read_text().splitlines())
+            bus.get_object(service,path).Event(dbus.Int32(menu()[title]['id']),'clicked',dbus.Int32(0),dbus.UInt32(0),dbus_interface='com.canonical.dbusmenu')
+            wait(lambda:len((root/'intents.jsonl').read_text().splitlines())>previous)
+            assert json.loads((root/'intents.jsonl').read_text().splitlines()[-1])==dict(action='Restore',payload={'outputId':target})
+        cases.append('restore-last-move-follows-both-monitors-independent-of-overview')
         state(paused=False,movementPaused=False,brightnessPaused=False,movementReady=True,
             transactionActive=True,skipAvailable=True,capabilities=dict(restoreBrightness=True))
         wait(lambda:menu().get('Skip',{}).get('enabled'))

@@ -56,7 +56,7 @@ def run_check(receipt, output):
             print(json.dumps(row), flush=True)
         try:
             version = subprocess.check_output(['rpm','-q','--qf','%{EVR}','oled-window-guard'], text=True)
-            if version != '1.0.5-1.fc44': raise RuntimeError('Install the tested movement RPM first')
+            if version != '1.0.6-1.fc44': raise RuntimeError('Install the tested movement RPM first')
             state = read_status()
             if not state.get('paused') or state.get('transactionActive'): raise RuntimeError('Pause OWG before Start')
             record('runtime', verify_rpm_runtime())
