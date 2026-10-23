@@ -73,6 +73,15 @@ QtObject {
                     if (!dimming.maskCount || !probe.confirmed())return;
                     check(dimming.surfaces.A.masks.length===1 && dimming.surfaces.A.masks[0].amount===.4,"manual dim covers focused display");
                     check(dimming.surfaces.B.masks.length===1,"other display unaffected");
+                    dimming.pendingScope={type:"shellInteraction",displayId:"A"};dimming.tick();
+                    check(dimming.surfaces.A.masks.length===1 && dimming.surfaces.B.masks.length===1,"shell menu preserves dimming");
+                    check(dimming.restorableOutputs().length===2,"both rendered monitors available to restore");
+                    check(dimming.restoreBrightness(["A"]),"scoped restore accepted");
+                    check(dimming.surfaces.A.masks.length===0 && dimming.surfaces.B.masks.length===1,"scoped restore retains other monitor");
+                    check(dimming.dimNow(["A"]),"manual dim overrides only scoped restore hold");probe.stage=8;
+                } else if (probe.stage===8) {
+                    if (!dimming.maskCount || !probe.confirmed())return;
+                    check(dimming.surfaces.A.masks.length===1 && dimming.surfaces.B.masks.length===1,"both monitors dim again");
                     dimming.pendingScope={type:"windowKey",displayId:"A"};dimming.tick();
                     check(dimming.surfaces.A.masks.length===0 && dimming.surfaces.B.masks.length===1,"interaction clears only selected manual dim");
                     check(dimming.dimNow(["A","B"]),"manual all guarded displays accepted");

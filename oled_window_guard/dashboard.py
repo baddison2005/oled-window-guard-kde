@@ -20,7 +20,7 @@ import threading
 from typing import Any, Callable, Mapping, Protocol
 
 from PySide6.QtCore import Qt, Signal, QTimer
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication, QCheckBox, QComboBox, QDoubleSpinBox, QFileDialog, QFormLayout,
     QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox,
@@ -199,11 +199,13 @@ class Dashboard(QMainWindow):
         self.tray_movement = self.tray_menu.addAction("Start movement guarding", lambda: self._toggle_guard("movement"))
         self.tray_brightness_guard = self.tray_menu.addAction("Start brightness guarding", lambda: self._toggle_guard("brightness"))
         self.tray_pause_resume = self.tray_menu.addAction("Start selected guarding", self._toggle_pause)
-        self.tray_move = self.tray_menu.addAction("Move Now", lambda: self._send("MoveNow"))
+        self.tray_move_actions = {}
+        self.tray_move_end = self.tray_menu.addSeparator()
         self.tray_skip = self.tray_menu.addAction("Skip", lambda: self._send("Skip"))
         self.tray_restore = self.tray_menu.addAction("Restore previous position", lambda: self._send("Restore"))
-        self.tray_brightness = self.tray_menu.addAction("Restore Brightness", lambda: self._send("RestoreBrightness"))
-        self.tray_dim_display = self.tray_menu.addAction("Dim selected display now", lambda: self._send("DimDisplayNow"))
+        self.tray_brightness_actions = {}
+        self.tray_brightness = self.tray_menu.addAction("Restore brightness on all displays", lambda: self._send("RestoreBrightness"))
+        self.tray_dim_actions = {}
         self.tray_dim_all = self.tray_menu.addAction("Dim all guarded displays now", lambda: self._send("DimAllDisplaysNow"))
         self.tray_menu.addSeparator()
         self.tray_menu.addAction("Quit", lambda: self._send("Quit"))
@@ -607,7 +609,7 @@ class Dashboard(QMainWindow):
 
     def _build_about(self) -> None:
         layout = self._page("About", "Keep your windows moving.\nCare for your OLED.")
-        form = self._card(layout, "OLED Window Guard 1.0.4 · Dr. Brett Addison")
+        form = self._card(layout, "OLED Window Guard 1.0.5 · Dr. Brett Addison")
         self.about_text = self._help(form, "Guarded movement and software dimming for your desktop. Original KDE implementation: GNU GPL version 3 or later. Shared schema and interfaces: MIT. Third-party components retain their own licences.")
         self._help(form, "OWG is provided without warranty. It cannot guarantee prevention of image retention or burn-in. The supported package targets Fedora 44, KWin 6.7.5 and Qt 6.11.2. Enable Resume guarding after unlock or wake in Safety & alerts to continue previously active guarding after a session interruption.")
         self.package_update_label = self._help(form, "")
@@ -993,15 +995,20 @@ class Dashboard(QMainWindow):
         self.tray_pause_resume.setText("Pause all guarding" if not paused else "Start selected guarding")
         self.tray_pause_resume.setEnabled(self.pause_resume_button.isEnabled())
         self.tray_open.setEnabled(True)
-        self.tray_move.setEnabled(self.move_now_button.isEnabled())
         self.tray_skip.setEnabled(self.skip_button.isEnabled())
         self.tray_restore.setEnabled(self.restore_button.isEnabled())
-        self.tray_brightness.setEnabled(self.restore_brightness_button.isEnabled())
+        restoring=status.get("restoreBrightnessOutputs", []) if status.get("brightnessPaused") is False else []
+        self.tray_brightness.setEnabled(self.restore_brightness_button.isEnabled() and bool(restoring))
         dim_outputs=status.get("dimDisplayOutputs", []) if status.get("brightnessPaused") is False else []
-        self.tray_dim_display.setEnabled(self.preview_display.currentData() in dim_outputs)
         self.tray_dim_all.setEnabled(bool(dim_outputs))
-        self.tray_dim_display.setToolTip("Dim Overview's selected display using its monitor darkness and fade. Interaction restores brightness.")
         self.tray_dim_all.setToolTip("Dim displays with active brightness guarding and monitor dimming enabled.")
+        movement_enabled=ready and not movement_paused and not planning_busy and status.get("movementReady") is True and status.get("transactionActive") is not True
+        self._monitor_menu_actions(self.tray_move_actions,self.tray_move_end,"Move now", "MoveNow",
+            self.settings["movementDisplays"],lambda output:movement_enabled and output in status.get("movementActiveDisplays",self.settings["movementDisplays"]))
+        self._monitor_menu_actions(self.tray_brightness_actions,self.tray_brightness,"Restore brightness", "RestoreBrightness",
+            self.settings["dimmingDisplays"],lambda output:self.restore_brightness_button.isEnabled() and output in restoring)
+        self._monitor_menu_actions(self.tray_dim_actions,self.tray_dim_all,"Dim now", "DimDisplayNow",
+            self.settings["dimmingDisplays"],lambda output:output in dim_outputs)
         for button, enabled_text, disabled_text in (
             (self.pause_resume_button,"Start or pause guarding on selected displays.","Select a movement or dimming display and wait for compositor readiness. Release held input; click and release on each desktop after startup if needed."),
             (self.move_now_button,"Start a warning on the display selected in Overview.","Start guarding, select a movement display, and wait for any current plan or warning to finish."),
@@ -1020,19 +1027,43 @@ class Dashboard(QMainWindow):
         action = "Pause" if self.status.get("paused") is False else "Resume"
         self._send(action)
 
-    def _send(self, action: str) -> None:
+    def _monitor_menu_actions(self, actions, before, label, intent, selected, enabled) -> None:
+        displays=[d for d in self._displays if d.get("id") in selected]
+        ids={d["id"] for d in displays}
+        for output in list(actions):
+            if output not in ids:
+                old=actions.pop(output);self.tray_menu.removeAction(old);old.deleteLater()
+        for display in displays:
+            output=display["id"]
+            if output not in actions:
+                item=QAction(self.tray_menu)
+                item.triggered.connect(lambda checked=False, target=output, command=intent:self._send(command,target))
+                self.tray_menu.insertAction(before,item);actions[output]=item
+            name=str(display.get("name") or output)
+            connector=display.get("connector")
+            if connector and connector not in name:name+=f" · {connector}"
+            actions[output].setText(f"{label} — {name}")
+            actions[output].setEnabled(bool(enabled(output)))
+
+    def _send(self, action: str, output_id: str | None = None) -> None:
         # Recheck at dispatch so stale/unknown UI state cannot turn into an intent.
         self._refresh_action_states()
         allowed = {"Open": True, "Quit": self.quit_button.isEnabled(), "Pause": self.pause_resume_button.isEnabled(), "Resume": self.pause_resume_button.isEnabled() and self.status.get("readiness") == "ready" and self.status.get("resumeReady") is True,
                    "PlanPreview": self.preview_button.isEnabled(), "MoveNow": self.move_now_button.isEnabled(), "Skip": self.skip_button.isEnabled(), "Restore": self.restore_button.isEnabled(), "RestoreBrightness": self.restore_brightness_button.isEnabled()}
-        allowed.update(DimDisplayNow=self.tray_dim_display.isEnabled(),DimAllDisplaysNow=self.tray_dim_all.isEnabled())
+        allowed.update(DimDisplayNow=False,DimAllDisplaysNow=self.tray_dim_all.isEnabled())
+        if output_id is not None:
+            actions={"MoveNow":self.tray_move_actions,"DimDisplayNow":self.tray_dim_actions,
+                     "RestoreBrightness":self.tray_brightness_actions}.get(action,{})
+            item=actions.get(output_id)
+            allowed[action]=item is not None and item.isEnabled()
         for kind,button in (("Movement",self.movement_guard_button),("Brightness",self.brightness_guard_button)):
             allowed["Resume"+kind]=button.isEnabled() and self.status.get(kind.lower()+"Paused",self.status.get("paused")) is not False
             allowed["Pause"+kind]=button.isEnabled() and self.status.get(kind.lower()+"Paused",self.status.get("paused")) is False
         if not allowed.get(action, False): return
         if action == "Open": self.showNormal(); self.raise_(); self.activateWindow()
         try:
-            response = self.intent_client.submit(action, {"outputId": self.preview_display.currentData()} if action in ("PlanPreview", "MoveNow", "Restore", "DimDisplayNow") else {})
+            payload={"outputId":output_id} if output_id is not None else {"outputId": self.preview_display.currentData()} if action in ("PlanPreview", "MoveNow", "Restore") else {}
+            response = self.intent_client.submit(action,payload)
             if isinstance(response, Mapping) and response.get("ok") is True and isinstance(response.get("status"), Mapping):
                 self.update_status(response["status"])
             if isinstance(response, Mapping) and response.get("ok") is False:

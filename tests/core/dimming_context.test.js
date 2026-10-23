@@ -1,7 +1,7 @@
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm");
 function load(name,imports) {
- const c={...imports};vm.runInNewContext(fs.readFileSync("core/"+name,"utf8").replace(/^\.pragma library\s*/m,"").replace(/^\.import.*$/gm,"")+"\nthis.api={"+(name==="dimming_options.js"?"resolveDimmingOptions":"context")+"};",c);return c.api;
+ const c={...imports};vm.runInNewContext(fs.readFileSync("core/"+name,"utf8").replace(/^\.pragma library\s*/m,"").replace(/^\.import.*$/gm,"")+"\nthis.api={"+(name==="dimming_options.js"?"resolveDimmingOptions":"context,shellWindow,pointerInteraction")+"};",c);return c.api;
 }
 const Model={};vm.runInNewContext(fs.readFileSync('core/model.js','utf8').replace(/^\.pragma library\s*/,''),Model);
 const Context=load("dimming_context.js",{Model,Options:load("dimming_options.js",{})});
@@ -42,3 +42,20 @@ console.log('PASS Cairo transparent dock region does not clip application dimmin
 snapshot.windows=[{...w('steam'),appId:'steam'}];snapshot.focusedIdentity=null;
 settings.dimmingExcludedApps=['com.valvesoftware.Steam'];
 assert.equal(Context.context(snapshot,settings,100,{}, {'com.valvesoftware.Steam':['Steam']}).windows[0].dimmable,false);
+
+// Shell menus preserve prior application focus and never become desktop clicks.
+settings.dimmingExcludedApps=[];
+const app=w('app'),panel={...w('panel'),appId:'org.kde.plasmashell',windowType:'dock'};
+const cairo={...w('cairo'),appId:'cairo-dock',windowType:'dock'};
+for(const shell of [panel,cairo,{...panel,windowType:'special'},{...panel,appId:'oled-window-guard',windowType:'special'}]) {
+ snapshot.windows=[app,shell];snapshot.focusedIdentity=shell.identity;
+ event=Context.context(snapshot,settings,100,{},null,'app');
+ assert.equal(event.focusedWindowId,'app');
+ assert.equal(Context.pointerInteraction(snapshot,{x:100,y:100},shell.identity).type,'shellInteraction');
+ // The real pointer recipient beats a transparent auto-hide dock's rectangle.
+ assert.equal(Context.pointerInteraction(snapshot,{x:100,y:100},'app').windowId,'app');
+}
+snapshot.windows=[app,{...panel,windowType:'desktop'}];snapshot.focusedIdentity='panel';
+assert.equal(Context.context(snapshot,settings,100,{},null,'app').focusedWindowId,null);
+assert.equal(Context.pointerInteraction(snapshot,{x:100,y:100},'panel').type,'desktopClick');
+console.log('PASS shell input/focus stays separate from desktop and app interaction');

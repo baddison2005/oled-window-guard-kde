@@ -221,6 +221,13 @@ public:
         result["outputs"]=outputs;result["outputIdentityComplete"]=complete;
         return result;
     }
+    // Input focus respects the client's input region, including transparent
+    // auto-hide dock surfaces. Geometry alone cannot identify a shell click.
+    Q_INVOKABLE QString pointerWindowIdentity() const {
+        if (!available() || QThread::currentThread()!=thread() || !KWin::input()->pointer()) return {};
+        auto *window=KWin::input()->pointer()->focus();
+        return window && !window->isDeleted() ? window->internalId().toString() : QString();
+    }
     // Read the compositor's client type, never infer it from an application
     // name. X11 configure positions use integer logical coordinates.
     Q_INVOKABLE QVariant placementUsesIntegerPosition(const QString &identity) const {

@@ -98,24 +98,24 @@ Check the installed package and GitHub for a newer compatible release.
 
 ## Supported system
 
-The v1.0.4 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.7.5 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
+The v1.0.5 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.7.5 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
 
 The native observer uses version-specific KWin interfaces. The RPM deliberately requires the matching KWin and Qt versions; it is not a generic package for every Plasma release or distribution. A system update to different KWin/Qt versions requires a compatible OWG build. XWayland application windows are supported inside the tested Wayland session; an X11 desktop session is not supported.
 
 ## Install
 
-1. Download `oled-window-guard-1.0.4-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.4](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.4).
+1. Download `oled-window-guard-1.0.5-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.5](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.5).
 2. In the download directory, verify the RPM checksum against `SHA256SUMS`:
 
    ```sh
-   sha256sum oled-window-guard-1.0.4-1.fc44.x86_64.rpm
+   sha256sum oled-window-guard-1.0.5-1.fc44.x86_64.rpm
    ```
 
 3. Quit an existing OWG session, then install:
 
    ```sh
    oled-window-guard quit  # Only needed if OWG is already running.
-   sudo dnf install ./oled-window-guard-1.0.4-1.fc44.x86_64.rpm
+   sudo dnf install ./oled-window-guard-1.0.5-1.fc44.x86_64.rpm
    ```
 
 4. Open **OLED Window Guard** from the application launcher, or run `oled-window-guard open`.
@@ -144,13 +144,15 @@ The bottom-left lights show each guard separately: **green = active**, **grey = 
 
 ## Cairo-Dock and launcher menu
 
-While OWG is running, right-click its application icon in Cairo-Dock for the same live controls as the tray: **Open OLED Window Guard**, **Start/Pause movement guarding**, **Start/Pause brightness guarding**, **Start selected/Pause all guarding**, **Move Now**, **Skip**, **Restore previous position**, **Restore Brightness**, and **Quit**.
+While OWG is running, right-click its application icon in Cairo-Dock for the same live controls as the tray: **Open OLED Window Guard**, **Start/Pause movement guarding**, **Start/Pause brightness guarding**, **Start selected/Pause all guarding**, monitor-specific **Move now**, **Skip**, **Restore previous position**, monitor-specific **Dim now** and **Restore brightness**, all-display brightness actions, and **Quit**.
 
 Movement and brightness labels follow their independent guard states. Move Now, Skip and Restore previous position are disabled while movement is paused; Restore Brightness is disabled while brightness is paused. Availability also follows the controller's safety checks: Skip requires an active warning and Restore requires a verified last move. The menu updates from the same actions as the dashboard/tray.
 
-**Dim selected display now** uses Overview’s selected display. **Dim all guarded displays now** applies to every connected display with active brightness guarding and monitor dimming enabled. Both skip the activation delay, use each display’s configured darkness and fade, and preserve app exemptions. They can dim a display with focused content. Interaction on that display, Restore Brightness, pausing, locking or runtime loss clears the manual effect. Brightness guarding must be active.
+**Move now**, **Dim now** and **Restore brightness** entries name each connected monitor selected for the relevant guard, including its connector where available. Menu targets are independent of Overview’s selected display. Restore entries enable only while that monitor has visible OWG dimming; restoring one monitor leaves the others unchanged. **Restore brightness on all displays** clears every OWG dimming effect.
 
-Move Now uses the display selected in Overview when it is still selected for movement and connected, otherwise the first connected movement display. All existing warnings, capability checks and stale-plan refusals apply.
+**Dim all guarded displays now** applies to every connected display with active brightness guarding and monitor dimming enabled. The individual and all-display dimming actions skip the activation delay, use each display’s configured darkness and fade, and preserve app exemptions. They can dim a display with focused content. Application or empty-desktop interaction on that display, Restore Brightness, pausing, locking or runtime loss clears the manual effect. Opening a panel or dock menu preserves dimming and application inactivity clocks. Brightness guarding must be active.
+
+The `move-now` CLI command uses the display selected in Overview when it is still selected for movement and connected, otherwise the first connected movement display. All existing warnings, capability checks and stale-plan refusals apply.
 
 This integration requires Cairo-Dock's **D-Bus plug-in** with **SetMenu/libdbusmenu** support and the Plasma status notifier host. It is optional: the tray and dashboard work without it. OWG reconnects after a dock restart or launcher reload. When OWG is closed, clicking its icon opens it normally; a live guarding menu requires the app to be running. Fixed desktop-entry actions were removed to avoid duplicate controls. Other launchers continue to open OWG normally.
 
@@ -202,7 +204,7 @@ python3 -m unittest discover -s tests/packaging
 
 `tests/integration/run_*.py` contains separate private-compositor and physical acceptance runners. They are not part of the unit-test commands above; read their prerequisites before running them. Some historical DNF/signing rehearsal runners require private development artifacts that are not included in this repository.
 
-See the [v1.0.4 review](docs/RELEASE_REVIEW_v1.0.4.md) and [changelog](CHANGELOG.md) for release scope and validation.
+See the [v1.0.5 review](docs/RELEASE_REVIEW_v1.0.5.md) and [changelog](CHANGELOG.md) for release scope and validation.
 
 ## License
 

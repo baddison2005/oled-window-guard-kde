@@ -4,10 +4,10 @@ const begin=source.indexOf('function inputChanged('),open=source.indexOf('{',beg
 while(depth){if(source[end]==='{')depth++;if(source[end]==='}')depth--;end++;}
 let sample={button:0,buttonsDown:false,keyboard:0,axis:0},hover='active',captures=0,ticks=0;
 const dimmer={stopping:false,lastInput:null,pendingScope:null,protectedWindowIds:[],
- observer:{planning:{nativeObservation:{localSnapshot(){return {...sample};}}}},
+ observer:{capture(){return {windows:[]};},planning:{nativeObservation:{localSnapshot(){return {...sample};}}}},
  pointerScope(){captures++;return {type:'windowClick',displayId:'A',windowId:hover};},
  tick(){ticks++;},clear(){this.protectedWindowIds=[];}};
-const context=vm.createContext({dimmer});
+const context=vm.createContext({dimmer,Context:{shellWindow(){return false;}}});
 const input=vm.runInContext('with(dimmer){('+source.slice(begin,end)+')}',context);
 input('native-input');
 for(let i=0;i<1000;i++)input('native-input');

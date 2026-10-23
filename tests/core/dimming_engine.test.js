@@ -169,3 +169,26 @@ step(event);event.nowMs=2500;step(event);event.nowMs=3600;result=step(event);
 assert.ok(result.masks.some(m=>m.outputId==='A' && m.amount===.3));
 event.dimNowOutputIds=['A'];event.nowMs=3700;result=step(event);
 assert.ok(result.masks.some(m=>m.outputId==='A' && m.amount>=.3));
+
+// A monitor-specific restore retains every other monitor's masks and clocks.
+state=Engine.createDimmingState();event=base();event.dimNowOutputIds=['A','B'];step(event);
+event.dimNowOutputIds=[];event.nowMs=1500;result=step(event);
+const bClock=copy(state.outputs.B),bMasks=copy(result.masks.filter(m=>m.outputId==='B'));
+event.restoreOutputIds=['A'];result=step(event);
+assert.ok(result.masks.every(m=>m.outputId!=='A'));
+assert.deepEqual(state.outputs.B,bClock);
+assert.deepEqual(result.masks.filter(m=>m.outputId==='B'),bMasks);
+event.restoreOutputIds=[];event.nowMs=6000;result=step(event);
+assert.ok(result.masks.every(m=>m.outputId!=='A')); // 5-second minimum hold
+assert.ok(result.masks.some(m=>m.outputId==='B'));
+event.dimNowOutputIds=['A'];event.nowMs=6100;step(event);
+event.dimNowOutputIds=[];event.nowMs=7200;result=step(event);
+assert.ok(['A','B'].every(id=>result.masks.some(m=>m.outputId===id)));
+event.scopeEvent={type:'shellInteraction',displayId:'A'};result=step(event);
+assert.ok(['A','B'].every(id=>result.masks.some(m=>m.outputId===id && m.wholeDisplay)));
+event.scopeEvent={type:'desktopClick',displayId:'A'};result=step(event);
+assert.ok(!Object.hasOwn(state.forcedDisplays,'A'));
+assert.ok(result.masks.some(m=>m.outputId==='B'));
+event.restoreBrightness=true;result=step(event);assert.equal(result.masks.length,0);
+assert.equal(Object.keys(state.restoreOutputs).length,0);
+console.log('PASS scoped restore and shell clicks preserve other displays');

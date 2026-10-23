@@ -128,6 +128,8 @@ class SessionHost(QObject):
             if self.runtime_pending and action not in (*component_pauses, "ResumeMovement", "ResumeBrightness", "Skip", "RestoreBrightness"):
                 return {"ok": False, "reason": "runtime-busy", "status": self.status}
             output = payload.get("outputId")
+            if action == "RestoreBrightness" and output is not None and output not in self.status.get("restoreBrightnessOutputs", []):
+                return {"ok": False, "reason": "display-not-dimmed", "status": self.status}
             if action == "DimDisplayNow":
                 if output not in self.status.get("dimDisplayOutputs", []):
                     return {"ok": False, "reason": "display-not-brightness-guarded", "status": self.status}
@@ -229,6 +231,7 @@ class SessionHost(QObject):
                            movementActiveDisplays=[], brightnessActiveDisplays=[], movementResumePending=False, brightnessResumePending=False)
         self.status["capabilities"]["restoreBrightness"] = False
         self.status["dimDisplayOutputs"] = []
+        self.status["restoreBrightnessOutputs"] = []
         self.status["suspendedReasons"] = ["Guarded runtime unavailable"]
 
     def apply_runtime(self, runtime: Any, values: Mapping[str, Any]) -> None:
@@ -291,13 +294,14 @@ class SessionHost(QObject):
         for key in ("dimmingReady", "restoreBrightness"):
             if key in runtime and type(runtime[key]) is not bool:
                 raise ValueError("invalid-dimming-status")
-        dim_outputs=runtime.get("dimDisplayOutputs", [])
-        if (not isinstance(dim_outputs,list) or len(dim_outputs)>16 or
-                any(not isinstance(v,str) or v not in values['dimmingDisplays'] or
-                    not any(row['id']==v for row in self.status['displays']) for v in dim_outputs) or
-                len(set(dim_outputs))!=len(dim_outputs)):
-            raise ValueError('invalid-dim-display-outputs')
-        self.status['dimDisplayOutputs']=dim_outputs
+        for key in ("dimDisplayOutputs", "restoreBrightnessOutputs"):
+            ids=runtime.get(key, [])
+            if (not isinstance(ids,list) or len(ids)>16 or
+                    any(not isinstance(v,str) or v not in values['dimmingDisplays'] or
+                        not any(row['id']==v for row in self.status['displays']) for v in ids) or
+                    len(set(ids))!=len(ids)):
+                raise ValueError('invalid-dim-display-outputs')
+            self.status[key]=ids
         dimming=runtime.get("dimming")
         if dimming is not None:
             if (not isinstance(dimming,dict) or type(dimming.get("healthy")) is not bool or

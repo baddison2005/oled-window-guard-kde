@@ -19,6 +19,14 @@ QtObject {
     property var shortcut:null
     property bool stopping:false
     property var pendingDimOutputIds:[]
+    property var pendingRestoreOutputIds:[]
+    property var previousFocusId:null
+    function restorableOutputs() {
+        return Object.keys(surfaces).filter(function(id) {
+            const surface=surfaces[id];
+            return surface.confirmed && surface.plane.visible && surface.masks.some(function(m){return m.amount>0;});
+        });
+    }
     function status() {
         var visible=0;
         for (var id in surfaces) if (surfaces[id].confirmed && surfaces[id].plane.visible) visible+=surfaces[id].masks.length;
@@ -37,12 +45,14 @@ QtObject {
     }
     function clear(reason) {
         for (var id in surfaces) surfaces[id].clear();
-        state.outputs={};state.forcedDisplays={};pendingDimOutputIds=[];maskCount=0;lastReason=reason;
+        state.outputs={};state.forcedDisplays={};pendingDimOutputIds=[];pendingRestoreOutputIds=[];previousFocusId=null;maskCount=0;lastReason=reason;
     }
     function retainOutputs(ids) {
         for(var id in surfaces)if(ids.indexOf(id)<0)surfaces[id].clear();
         for(var id in state.outputs)if(ids.indexOf(id)<0)delete state.outputs[id];
         for(var id in state.desktopScopes)if(ids.indexOf(id)<0)delete state.desktopScopes[id];
+        for(var id in state.forcedDisplays)if(ids.indexOf(id)<0)delete state.forcedDisplays[id];
+        for(var id in state.restoreOutputs)if(ids.indexOf(id)<0)delete state.restoreOutputs[id];
     }
     function fail(reason) {healthy=false;clear(reason);}
     function stop() {
@@ -50,7 +60,14 @@ QtObject {
         stopping=true;timer.stop();nativeSignals.target=null;windowSignals.target=null;warningSignals.target=null;clear("shutdown");
         if (shortcut) {shortcut.destroy();shortcut=null;}
     }
-    function restoreBrightness() {
+    function restoreBrightness(ids) {
+        if (ids) {
+            const allowed=restorableOutputs();
+            if (!ids.length || ids.some(function(id){return allowed.indexOf(id)<0;})) return false;
+            pendingRestoreOutputIds=ids.slice();
+            pendingDimOutputIds=pendingDimOutputIds.filter(function(id){return ids.indexOf(id)<0;});
+            tick();return true;
+        }
         var now=observer.runtime.schedulerNow(), delay=5000;
         var config=observer.planning.configuration;
         clear("restore-brightness");
@@ -61,6 +78,7 @@ QtObject {
             });
         }
         state.restore=Timing.restoreDimmingBrightness(state.restore,now,delay);
+        state.restoreOutputs={};return true;
     }
     function manualOutputs() {
         const config=observer.planning.configuration;
@@ -83,8 +101,9 @@ QtObject {
         var warning=observer.warningSurface, bounds=warning.targetGeometry;
         if (warning.activeGeneration>=0 && bounds && point.x>=bounds.x && point.y>=bounds.y && point.x<bounds.x+bounds.width && point.y<bounds.y+bounds.height)
             return {type:"guardInteraction",displayId:output.id};
-        var front=snapshot.windows.slice().reverse().filter(function(w){var r=w.rect;return !(w.appId==="cairo-dock" && w.windowType==="dock") && w.visible && !w.minimized && w.onCurrentDesktop && w.onCurrentActivity && r && point.x>=r.x && point.y>=r.y && point.x<r.x+r.width && point.y<r.y+r.height;})[0];
-        return front && front.windowType!=="desktop"?{type:"windowClick",displayId:output.id,windowId:front.identity}:{type:"desktopClick",displayId:output.id};
+        var pointerIdentity=null;
+        try {pointerIdentity=observer.planning.nativeObservation.localObserver.pointerWindowIdentity();} catch(error) {}
+        return Context.pointerInteraction(snapshot,point,pointerIdentity);
     }
     function inputChanged(reason) {
         if (stopping) return;
@@ -101,11 +120,13 @@ QtObject {
                 if (scope.windowId) protectedWindowIds=[scope.windowId];
                 pendingScope=scope;changed=true;
             } else if (lastInput && sample.keyboard!==lastInput.keyboard) {
-                pendingScope={type:"windowKey"};changed=true;
+                var snapshot=observer.capture();
+                var focus=snapshot.windows.filter(function(w){return w.identity===snapshot.focusedIdentity;})[0];
+                pendingScope=Context.shellWindow(focus)?null:{type:"windowKey"};changed=true;
             } else if (lastInput && sample.axis!==lastInput.axis) {
                 pendingScope=pointerScope("desktopClick");
                 if (pendingScope.windowId) pendingScope.type="windowInteraction";
-                else pendingScope=null; // scrolling empty desktop is not a click
+                else pendingScope=null; // shell/empty-desktop scrolling is not an app interaction
                 changed=true;
             }
             // Recompute fresh masks synchronously; preserve unrelated clocks.
@@ -126,11 +147,13 @@ QtObject {
         if (!healthy || !config || (typeof observer.planning.lastContact==="number" && (contactAge<0 || contactAge>=500)) || !observer.runtime.brightnessEnabled || !observer.runtime.dimmingFacts().safe) {clear("unavailable-or-paused");return;}
         try {
             var event=Context.context(observer.capture(),Object.assign({},config.settings,{dimmingDisplays:observer.runtime.activeOutputs("brightness")}),observer.runtime.schedulerNow(),
-                {available:true,rendererProven:healthy,paused:false,locked:false,inactive:false,sleeping:false,rendererError:false},config.applicationAliases);
+                {available:true,rendererProven:healthy,paused:false,locked:false,inactive:false,sleeping:false,rendererError:false},config.applicationAliases,previousFocusId);
+            previousFocusId=event.focusedWindowId;
             if (observer.warningSurface.activeGeneration>=0 && observer.warningSurface.targetGeometry)
                 event.windows.unshift({id:"owg-warning",frame:observer.warningSurface.targetGeometry,dimmable:false,displayDimmable:true});
             event.scopeEvent=pendingScope;pendingScope=null;
             event.dimNowOutputIds=pendingDimOutputIds;pendingDimOutputIds=[];
+            event.restoreOutputIds=pendingRestoreOutputIds;pendingRestoreOutputIds=[];
             event.protectedWindowIds=protectedWindowIds;
             var result=Engine.updateDimming(state,event);state=result.state;
             if (result.reason==="invalid-input") throw new Error("invalid-dimming-input");

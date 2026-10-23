@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.5 — 2026-10-23
+
+- Name individual monitors in Move now, Dim now and Restore brightness menu actions; targets are independent of Overview selection.
+- Add scoped brightness restoration with independent holds and retain Restore brightness on all displays.
+- Keep shell panel/dock/menu clicks and focus changes from clearing monitor dimming or resetting application timers. Use the native pointer recipient to respect transparent dock input regions.
+- Enable monitor restore entries only while their rendered dimming is active; remove disconnected targets and retain guard/readiness checks.
+
 ## 1.0.4 — 2026-10-23
 
 - Keep the companion-owned compositor runtime separate from the disabled KWin package toggle, preserving guards across Window Layouts saves and KWin reconfiguration.

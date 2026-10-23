@@ -5,6 +5,9 @@ input timing, held state, focus, output identity and session transitions inside
 KWin. It does not inject input or assign application geometry/focus/opacity.
 A restricted renderer operation reorders authenticated internal OWG dimming
 planes around dock surfaces; it never reorders application clients.
+The read-only pointer recipient identifies shell interactions using KWin's input
+focus, so a transparent auto-hide dock rectangle cannot stand in for a click
+delivered to an application underneath it.
 
 Movement uses target-display interaction tokens. Passive pointer motion does
 not cancel movement; clicks, scrolling, dragging and typing after the warning's

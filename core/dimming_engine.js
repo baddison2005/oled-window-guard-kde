@@ -4,7 +4,7 @@
 
 // Pure composition. Inputs are validated, resolved display options and a
 // front-to-back window list; the host owns sampling, effects and shortcuts.
-function createDimmingState() { return { outputs:{}, desktopScopes:{}, forcedDisplays:{}, scope:Timing.createDimmingScopeState(),
+function createDimmingState() { return { outputs:{}, desktopScopes:{}, forcedDisplays:{}, restoreOutputs:{}, scope:Timing.createDimmingScopeState(),
     restore:Timing.createBrightnessRestoreState() }; }
 function engineCopy(value) { return JSON.parse(JSON.stringify(value)); }
 function engineFinite(value) { return typeof value === "number" && isFinite(value); }
@@ -62,10 +62,21 @@ function updateDimming(input,event) {
             if (opt) hold=Math.max(hold,opt.windowDelayMs || 0,opt.displayDelayMs || 0);
         }
         state.restore=Timing.restoreDimmingBrightness(state.restore,event.nowMs,hold);
+        state.restoreOutputs={};
         return engineBlank(state,"restore-brightness");
     }
     if (!engineValid(event)) return engineBlank(state,"invalid-input");
     state.forcedDisplays=state.forcedDisplays || {};
+    state.restoreOutputs=state.restoreOutputs || {};
+    state.desktopScopes=state.desktopScopes || {};
+    if (Array.isArray(event.restoreOutputIds)) event.restoreOutputIds.forEach(function(id) {
+        var display=event.displays.filter(function(d){return d.id===id;})[0];
+        if (!display || event.selectedOutputIds.indexOf(id)<0) return;
+        var o=display.options;
+        state.restoreOutputs[id]=Timing.restoreDimmingBrightness(state.restoreOutputs[id],event.nowMs,
+            Math.max(o.windowDelayMs,o.displayDelayMs));
+        delete state.outputs[id];delete state.forcedDisplays[id];delete state.desktopScopes[id];
+    });
     if (Array.isArray(event.dimNowOutputIds)) {
         // The compositor resolves the requested IDs against its active guard
         // scope. This engine repeats selection/option checks defensively.
@@ -74,6 +85,7 @@ function updateDimming(input,event) {
             if (display && display.options.display && display.options.displayAmount>0 &&
                     event.selectedOutputIds.indexOf(id)>=0) {
                 state.forcedDisplays[id]=event.nowMs;
+                delete state.restoreOutputs[id];
                 delete state.desktopScopes[id];
             }
         });
@@ -83,7 +95,8 @@ function updateDimming(input,event) {
     if (interaction) {
         var target=interaction.displayId || interaction.pointerDisplayId || event.focusedDisplayId;
         if (interaction.type==="reset") state.forcedDisplays={};
-        else if (target) delete state.forcedDisplays[target];
+        else if (target && ["desktopClick","desktopSwitch","activitySwitch","windowClick","windowKey","windowInteraction"].indexOf(interaction.type)>=0)
+            delete state.forcedDisplays[target];
         if (interaction.type==="reset") {state.desktopScopes={};state.outputs={};}
         else if (target && (interaction.type==="desktopClick" || interaction.type==="desktopSwitch" || interaction.type==="activitySwitch")) {
             state.desktopScopes[target]={desktop:interaction.type==="desktopClick"};
@@ -106,6 +119,7 @@ function updateDimming(input,event) {
         var d=event.displays[i], id=d.id, o=d.options;
         var forced=Object.prototype.hasOwnProperty.call(state.forcedDisplays,id);
         if (restoring && !forced) continue;
+        if (Timing.isBrightnessRestoreActive(state.restoreOutputs[id],event.nowMs) && !forced) continue;
         var hold=state.desktopScopes[id];
         if (event.selectedOutputIds.indexOf(id)<0 ||
                 (hold && (!hold.desktop || o.desktopClickBehavior!=="restart-timers"))) continue;
@@ -144,5 +158,6 @@ function updateDimming(input,event) {
     state.outputs=next;
     Object.keys(state.forcedDisplays).forEach(function(id){if (event.selectedOutputIds.indexOf(id)<0 || !event.displays.some(function(d){return d.id===id;})) delete state.forcedDisplays[id];});
     Object.keys(state.desktopScopes).forEach(function(id){if (!event.displays.some(function(d){return d.id===id;})) delete state.desktopScopes[id];});
+    Object.keys(state.restoreOutputs).forEach(function(id){if (event.selectedOutputIds.indexOf(id)<0 || !Timing.isBrightnessRestoreActive(state.restoreOutputs[id],event.nowMs)) delete state.restoreOutputs[id];});
     return {state:state,masks:masks,bright:masks.length===0,reason:masks.length ? "planned" : "no-eligible-region"};
 }

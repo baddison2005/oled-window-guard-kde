@@ -139,35 +139,38 @@ class DashboardTests(unittest.TestCase):
 
     def test_manual_display_dimming_uses_selected_scope_and_paused_state(self):
         self.window.settings['movementDisplays']=['DP-1']
+        self.window.settings['dimmingDisplays']=['DP-1','HDMI-A-1']
         self.window.set_displays([dict(id='DP-1',name='LG'),dict(id='HDMI-A-1',name='HDMI')])
         sample=dict(readiness='ready',paused=False,movementPaused=True,brightnessPaused=False,
             dimDisplayOutputs=['DP-1'],capabilities=dict(restoreBrightness=True))
         self.window.update_status(sample)
-        self.assertTrue(self.window.tray_dim_display.isEnabled())
+        self.assertTrue(self.window.tray_dim_actions['DP-1'].isEnabled())
         self.assertTrue(self.window.tray_dim_all.isEnabled())
-        self.window.tray_dim_display.trigger()
+        self.window.tray_dim_actions['DP-1'].trigger()
         self.assertEqual(self.calls[-1],('DimDisplayNow',{'outputId':'DP-1'}))
         self.window.preview_display.setCurrentIndex(1);self.window.update_status(sample)
-        self.assertFalse(self.window.tray_dim_display.isEnabled())
+        self.assertTrue(self.window.tray_dim_actions['DP-1'].isEnabled())
+        self.assertFalse(self.window.tray_dim_actions['HDMI-A-1'].isEnabled())
         self.window.tray_dim_all.trigger()
         self.assertEqual(self.calls[-1],('DimAllDisplaysNow',{}))
         self.window.update_status(dict(sample,brightnessPaused=True))
         self.assertFalse(self.window.tray_dim_all.isEnabled())
-        self.assertFalse(self.window.tray_dim_display.isEnabled())
+        self.assertFalse(self.window.tray_dim_actions['DP-1'].isEnabled())
 
     def test_live_menu_tracks_independent_guards_and_disables_paused_actions(self):
         self.window.settings['movementDisplays'] = ['DP-1']
+        self.window.settings['dimmingDisplays'] = ['DP-1']
         self.window.set_displays([dict(id='DP-1',name='Display')])
         base = dict(readiness='ready', resumeReady=True, movementResumeReady=True,
                     brightnessResumeReady=True, canPause=True, movementReady=True,
-                    restoreAvailable=True, restoreOutputId='DP-1', capabilities=dict(restoreBrightness=True))
+                    restoreAvailable=True, restoreOutputId='DP-1', restoreBrightnessOutputs=['DP-1'],capabilities=dict(restoreBrightness=True))
         for movement, brightness in ((True,True),(True,False),(False,True),(False,False)):
             with self.subTest(movementPaused=movement, brightnessPaused=brightness):
                 self.window.update_status(dict(base, paused=movement and brightness,
                     movementPaused=movement, brightnessPaused=brightness))
                 self.assertEqual(self.window.tray_movement.text(), ('Start' if movement else 'Pause')+' movement guarding')
                 self.assertEqual(self.window.tray_brightness_guard.text(), ('Start' if brightness else 'Pause')+' brightness guarding')
-                self.assertEqual(self.window.tray_move.isEnabled(), not movement)
+                self.assertEqual(self.window.tray_move_actions['DP-1'].isEnabled(), not movement)
                 self.assertEqual(self.window.tray_restore.isEnabled(), not movement)
                 self.assertEqual(self.window.tray_brightness.isEnabled(), not brightness)
                 self.assertFalse(self.window.tray_skip.isEnabled())
@@ -176,6 +179,33 @@ class DashboardTests(unittest.TestCase):
         self.assertTrue(self.window.tray_skip.isEnabled())
         self.window.update_status(dict(self.window.status, movementPaused=True))
         self.assertFalse(self.window.tray_skip.isEnabled())
+
+    def test_monitor_actions_ignore_overview_selection_and_remove_disconnected_targets(self):
+        ids=['DP-1','HDMI-A-1']
+        self.window.settings['movementDisplays']=ids[:]
+        self.window.settings['dimmingDisplays']=ids[:]
+        self.window.set_displays([dict(id=ids[0],name='LG',connector='DP-1'),dict(id=ids[1],name='HDMI')])
+        sample=dict(readiness='ready',paused=False,movementPaused=False,brightnessPaused=False,
+                    movementReady=True,movementActiveDisplays=ids,dimDisplayOutputs=ids,
+                    restoreBrightnessOutputs=['DP-1'],capabilities=dict(restoreBrightness=True))
+        self.window.update_status(sample)
+        self.window.preview_display.setCurrentIndex(0)
+        self.window.tray_move_actions['HDMI-A-1'].trigger()
+        self.assertEqual(self.calls[-1],('MoveNow',{'outputId':'HDMI-A-1'}))
+        self.assertIn('LG · DP-1',self.window.tray_dim_actions['DP-1'].text())
+        before=self.window.tray_dim_actions['DP-1']
+        self.window.update_status(sample)
+        self.assertIs(before,self.window.tray_dim_actions['DP-1'])
+        self.assertTrue(self.window.tray_brightness_actions['DP-1'].isEnabled())
+        self.assertFalse(self.window.tray_brightness_actions['HDMI-A-1'].isEnabled())
+        self.window.tray_brightness_actions['DP-1'].trigger()
+        self.assertEqual(self.calls[-1],('RestoreBrightness',{'outputId':'DP-1'}))
+        self.window.tray_brightness.trigger()
+        self.assertEqual(self.calls[-1],('RestoreBrightness',{}))
+        self.window.set_displays([dict(id='DP-1',name='LG')])
+        self.assertNotIn('HDMI-A-1',self.window.tray_move_actions)
+        self.window._send('MoveNow','HDMI-A-1')
+        self.assertEqual(self.calls[-1],('RestoreBrightness',{}))
 
     def test_ready_actions_are_intents_and_restore_brightness_needs_capability(self):
         self.window.settings["movementDisplays"] = ["DP-1"]

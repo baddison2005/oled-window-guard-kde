@@ -27,8 +27,9 @@ def gui(root, app_root):
     w = Dashboard(ControllerIntentClient(submit), settings_path=root/'settings.json',
         layout_provider=Layouts(),app_ids=[],login_startup=LoginStartup(root/'config'))
     w.settings['soundEnabled']=False;w.settings['systemNotifications']=False
-    w.settings['movementDisplays']=['DP-1']
-    w.set_displays([dict(id='DP-1',name='Private display')])
+    w.settings['movementDisplays']=['DP-1','HDMI-A-1']
+    w.settings['dimmingDisplays']=['DP-1','HDMI-A-1']
+    w.set_displays([dict(id='DP-1',name='LG',connector='DP-1'),dict(id='HDMI-A-1',name='HDMI',connector='HDMI-A-1')])
     last=None
     def update():
         nonlocal last
@@ -112,9 +113,11 @@ def worker(root, app_root):
         child=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),'--gui',str(root),'--app-root',str(app_root)],env=env,stdout=gui_log,stderr=subprocess.STDOUT)
         wait(lambda:bool(attachments))
         wait(lambda:'Start movement guarding' in menu())
-        m=menu();assert len(m)==11,m
+        m=menu();assert len(m)==15,m
         assert 'Start brightness guarding' in m and 'Start selected guarding' in m
-        for title in ['Move Now','Skip','Restore previous position','Restore Brightness','Dim selected display now','Dim all guarded displays now']:assert not m[title]['enabled'],m
+        for title in ['Move now — LG · DP-1','Move now — HDMI · HDMI-A-1','Skip','Restore previous position',
+                      'Restore brightness — LG · DP-1','Restore brightness on all displays',
+                      'Dim now — LG · DP-1','Dim all guarded displays now']:assert not m[title]['enabled'],m
         cases.append('both-paused-start-labels-and-disabled-actions')
         # Activate a real exported Qt menu item; the injected GUI client records
         # the intent without loading any writer or real movement controller.
@@ -125,22 +128,32 @@ def worker(root, app_root):
         cases.append('exported-start-dispatches-existing-guard-intent')
         state(paused=False,movementPaused=False,movementReady=True)
         wait(lambda:'Pause movement guarding' in menu())
-        m=menu();assert m['Move Now']['enabled'] and not m['Restore Brightness']['enabled']
+        m=menu();assert m['Move now — LG · DP-1']['enabled'] and not m['Restore brightness on all displays']['enabled']
+        bus.get_object(service,path).Event(dbus.Int32(m['Move now — HDMI · HDMI-A-1']['id']),'clicked',dbus.Int32(0),dbus.UInt32(0),dbus_interface='com.canonical.dbusmenu')
+        wait(lambda:json.loads((root/'intents.jsonl').read_text().splitlines()[-1])['action']=='MoveNow')
+        assert json.loads((root/'intents.jsonl').read_text().splitlines()[-1])['payload']=={'outputId':'HDMI-A-1'}
         cases.append('movement-active-brightness-paused')
-        state(paused=False,brightnessPaused=False,dimDisplayOutputs=['DP-1'],capabilities=dict(restoreBrightness=True))
+        state(paused=False,brightnessPaused=False,dimDisplayOutputs=['DP-1','HDMI-A-1'],restoreBrightnessOutputs=['DP-1'],capabilities=dict(restoreBrightness=True))
         wait(lambda:'Pause brightness guarding' in menu() and 'Start movement guarding' in menu())
-        m=menu();assert not m['Move Now']['enabled'] and m['Restore Brightness']['enabled']
-        assert m['Dim selected display now']['enabled'] and m['Dim all guarded displays now']['enabled']
-        for title,action,payload in [('Dim selected display now','DimDisplayNow',{'outputId':'DP-1'}),('Dim all guarded displays now','DimAllDisplaysNow',{})]:
+        m=menu();assert not m['Move now — LG · DP-1']['enabled'] and m['Restore brightness on all displays']['enabled']
+        assert not m['Restore brightness — HDMI · HDMI-A-1']['enabled']
+        assert m['Dim now — LG · DP-1']['enabled'] and m['Dim all guarded displays now']['enabled']
+        for title,action,payload in [('Dim now — LG · DP-1','DimDisplayNow',{'outputId':'DP-1'}),
+            ('Dim now — HDMI · HDMI-A-1','DimDisplayNow',{'outputId':'HDMI-A-1'}),
+            ('Dim all guarded displays now','DimAllDisplaysNow',{}),
+            ('Restore brightness — LG · DP-1','RestoreBrightness',{'outputId':'DP-1'}),
+            ('Restore brightness on all displays','RestoreBrightness',{})]:
+            previous=len((root/'intents.jsonl').read_text().splitlines())
             bus.get_object(service,path).Event(dbus.Int32(m[title]['id']),'clicked',dbus.Int32(0),dbus.UInt32(0),dbus_interface='com.canonical.dbusmenu')
-            wait(lambda:json.loads((root/'intents.jsonl').read_text().splitlines()[-1])['action']==action)
+            wait(lambda:len((root/'intents.jsonl').read_text().splitlines())>previous)
+            assert json.loads((root/'intents.jsonl').read_text().splitlines()[-1])['action']==action
             assert json.loads((root/'intents.jsonl').read_text().splitlines()[-1])['payload']==payload
-        cases.append('manual-dimming-actions-dispatch-selected-and-all-scopes')
+        cases.append('named-monitor-move-dim-and-restore-actions-dispatch-exact-and-all-scopes')
         cases.append('brightness-active-movement-paused')
         state(paused=False,movementPaused=False,brightnessPaused=False,movementReady=True,
             transactionActive=True,skipAvailable=True,capabilities=dict(restoreBrightness=True))
         wait(lambda:menu().get('Skip',{}).get('enabled'))
-        m=menu();assert not m['Move Now']['enabled'] and not m['Restore previous position']['enabled']
+        m=menu();assert not m['Move now — LG · DP-1']['enabled'] and not m['Restore previous position']['enabled']
         assert 'Pause all guarding' in m
         cases.append('warning-skip-enabled-move-and-restore-disabled')
         # Forget the fake dock's attachment while keeping its bus owner; the

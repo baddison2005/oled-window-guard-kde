@@ -131,6 +131,7 @@ QtObject {
             dimmingReady:dimmingSafety.safe && dimmingOutput && brightnessEnabled,restoreBrightness:observer.dimming.healthy && brightnessEnabled,
             dimming:observer.dimming.status(),
             dimDisplayOutputs:brightnessEnabled && dimmingSafety.safe?observer.dimming.manualOutputs():[],
+            restoreBrightnessOutputs:brightnessEnabled?observer.dimming.restorableOutputs():[],
             nextMoveCheck:movementEnabled && !busy?Scheduler.nextCheck(scheduler,schedulerNow()):null,
             busy:busy,skipAvailable:warning.activeGeneration>=0,restoreAvailable:ready && movementEnabled && !busy && !!undo,
             restoreOutputId:undo?undo.plan.outputIds[0]:null,
@@ -193,8 +194,8 @@ QtObject {
             commandReport={id:command.id,status:"completed",reason:null};return
         }
         if (command.action==="RestoreBrightness") {
-            observer.dimming.restoreBrightness()
-            commandReport={id:command.id,status:"completed",reason:null};return
+            const restored=observer.dimming.restoreBrightness(command.outputId?[command.outputId]:null)
+            commandReport={id:command.id,status:restored?"completed":"rejected",reason:restored?null:"display-not-dimmed"};return
         }
         if (command.action==="DimDisplayNow" || command.action==="DimAllDisplaysNow") {
             const ids=command.action==="DimDisplayNow"?[command.outputId]:observer.dimming.manualOutputs();

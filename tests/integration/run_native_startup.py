@@ -70,7 +70,10 @@ def worker(module, root):
 import "./package/contents/ui/native/BUILD/org/oledwindowguard/Native" as Native
 QtObject {
  property Native.NativeObserver observer: Native.NativeObserver {}
- function sample() { console.log("OWG_STARTUP", JSON.stringify(observer.snapshot())) }
+ function sample() {
+  if (typeof observer.pointerWindowIdentity()!=="string")throw new Error("pointer window identity unavailable");
+  console.log("OWG_STARTUP", JSON.stringify(observer.snapshot()))
+ }
  property Connections events: Connections {
   target: observer
   function onInvalidated(reason) { sample() }
@@ -131,7 +134,8 @@ QtObject {
             old=repo/"docs/evidence/production-native-observer-2026-10-05/qml"
             shutil.copytree(old,root/"old-native")
             old_qml=root/"old-startup.qml"
-            old_qml.write_text(source.replace("./package/contents/ui/native/"+build_id,"./old-native"))
+            old_qml.write_text(source.replace("./package/contents/ui/native/"+build_id,"./old-native").replace(
+                '  if (typeof observer.pointerWindowIdentity()!=="string")throw new Error("pointer window identity unavailable");\n',''))
             load(old_qml)
             wait(lambda: bool(samples()))
             assert samples()[-1]["lockState"]=="unknown" and samples()[-1]["sleepState"]=="unknown"

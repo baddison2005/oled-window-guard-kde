@@ -15,7 +15,7 @@ ROOT=Path(__file__).resolve().parents[1]
 DIRECTORIES=('core','native/observer','oled_window_guard','packages/kwin-script',
              'packages/desktop','schema','interfaces','assets','tools','tests','probes',
              'packaging/rpm','packaging/licenses')
-FILES=('LICENSE','NOTICE','SOURCE.md','README.md','CHANGELOG.md','docs/RELEASE_REVIEW_v1.0.0.md','docs/RELEASE_REVIEW_v1.0.1.md','docs/RELEASE_REVIEW_v1.0.2.md','docs/RELEASE_REVIEW_v1.0.3.md','docs/RELEASE_REVIEW_v1.0.4.md')
+FILES=('LICENSE','NOTICE','SOURCE.md','README.md','CHANGELOG.md','docs/RELEASE_REVIEW_v1.0.0.md','docs/RELEASE_REVIEW_v1.0.1.md','docs/RELEASE_REVIEW_v1.0.2.md','docs/RELEASE_REVIEW_v1.0.3.md','docs/RELEASE_REVIEW_v1.0.4.md','docs/RELEASE_REVIEW_v1.0.5.md')
 
 
 def source_files(root=ROOT):

@@ -75,6 +75,20 @@ class SessionTests(unittest.TestCase):
         self.assertFalse(self.host.dashboard.isMinimized())
         self.assertTrue(self.host.dashboard.isVisible())
 
+    def test_monitor_restore_requires_rendered_output_and_retains_movement_state(self):
+        self.select_output()
+        preferences.save_settings(self.path,dict(preferences.load_settings(self.path).values,
+            paused=False,dimDisplays=True,dimmingDisplays=['DP-1']))
+        self.product_exchange(2,armed=True,brightnessArmed=True,movementReady=True,
+            restoreAvailable=True,restoreBrightness=True,restoreBrightnessOutputs=['DP-1'])
+        self.assertEqual(self.host.submit('RestoreBrightness',{'outputId':'other'})['reason'],'display-not-dimmed')
+        self.assertTrue(self.host.submit('RestoreBrightness',{'outputId':'DP-1'})['ok'])
+        self.assertEqual(self.host.runtime_command['outputId'],'DP-1')
+        self.assertTrue(self.host.status['restoreAvailable'])
+        self.product_exchange(3,armed=True,restoreBrightness=True,restoreBrightnessOutputs=[])
+        self.assertEqual(self.host.submit('RestoreBrightness',{'outputId':'DP-1'})['reason'],'display-not-dimmed')
+        self.assertTrue(self.host.submit('RestoreBrightness')['ok'])
+
     def test_component_pause_is_available_without_readiness(self):
         for action in ('PauseMovement', 'PauseBrightness'):
             self.assertTrue(self.host.submit(action)['ok'])

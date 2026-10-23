@@ -13,7 +13,7 @@
     "Id": "oled-window-guard-adapter",
     "License": "GPL-3.0-or-later",
     "Name": "OLED Window Guard Adapter",
-    "Version": "1.0.4"
+    "Version": "1.0.5"
   },
   "X-Plasma-API": "declarativescript",
   "X-Plasma-API-Minimum-Version": "6.0",
