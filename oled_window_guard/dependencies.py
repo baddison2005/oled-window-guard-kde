@@ -7,7 +7,7 @@ from typing import Callable, Sequence
 
 from PySide6.QtCore import qVersion
 
-TESTED_VERSIONS = {"kwin": "6.7.5", "plasma-workspace": "6.7.5",
+TESTED_VERSIONS = {"kwin": "6.8.2", "plasma-workspace": "6.8.2",
                    "python3-pyside6": "6.11.2"}
 REQUIRED_COMMANDS = ("kpackagetool6", "kreadconfig6", "rpm")
 

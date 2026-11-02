@@ -1,6 +1,6 @@
 # Compositor-local native observer
 
-The production QML module is compiled for KWin 6.7.5 / Qt 6.11.2. It observes
+The production QML module is compiled for KWin 6.8.2 / Qt 6.11.2. It observes
 input timing, held state, focus, output identity and session transitions inside
 KWin. It does not inject input or assign application geometry/focus/opacity.
 A restricted renderer operation reorders authenticated internal OWG dimming

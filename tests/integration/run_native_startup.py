@@ -131,21 +131,15 @@ QtObject {
 
         try:
             wait(lambda: bus.interface().isServiceRegistered("org.kde.KWin").value())
-            old=repo/"docs/evidence/production-native-observer-2026-10-05/qml"
-            shutil.copytree(old,root/"old-native")
-            old_qml=root/"old-startup.qml"
-            old_qml.write_text(source.replace("./package/contents/ui/native/"+build_id,"./old-native").replace(
-                '  if (typeof observer.pointerWindowIdentity()!=="string")throw new Error("pointer window identity unavailable");\n',''))
-            load(old_qml)
-            wait(lambda: bool(samples()))
-            assert samples()[-1]["lockState"]=="unknown" and samples()[-1]["sleepState"]=="unknown"
+            # Never import a historical ELF into a compositor with another
+            # private ABI. Mismatch refusal is tested at the QML preflight.
+            load()
+            check("fresh-awake", "awake")
             old_epoch=samples()[-1]["epoch"]
             call("unloadScript", "owg-native-startup-test")
             load()
-            check("fresh-awake", "awake")
+            check("same-compositor-native-reload", "awake")
             assert samples()[-1]["epoch"]!=old_epoch
-            results.append({"case":"same-compositor-native-upgrade", "oldEpoch":old_epoch,
-                            "newEpoch":samples()[-1]["epoch"]})
             for name,entry in immutable_entries:
                 previous=samples()[-1]["epoch"]
                 call("unloadScript", "owg-native-startup-test")

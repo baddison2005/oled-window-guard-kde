@@ -26,6 +26,8 @@ class UpdateStatusTests(unittest.TestCase):
             return '\n'.join([U.PACKAGE, '1.0.2', '1.fc44', 'x86_64', '0'])
         if argv[:3] == ['rpm', '-qp', '--requires']:
             return 'kwin = 6.7.5\nqt6-qtbase = 6.11.2\nqt6-qtdeclarative = 6.11.2'
+        if argv[:3] == ['rpm', '-qp', '--provides']:
+            return ''  # Legacy releases declared their target as requirements.
         if argv[:2] == ['rpm', '-V']:
             return ''
         if argv[-1] == U.PACKAGE:
@@ -122,6 +124,24 @@ class UpdateStatusTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'kwin'): U.validate_rpm(folder, runner=wrong_runtime)
             self.current = '1.0.3-1.fc44'
             with self.assertRaisesRegex(ValueError, 'not newer'): U.validate_rpm(folder, runner=self.runner)
+
+    def test_native_target_declarations_do_not_require_pinned_system_dependencies(self):
+        with tempfile.TemporaryDirectory() as temp:
+            folder=Path(temp);self.stage(folder)
+            def modern(argv):
+                if argv[:3]==['rpm','-qp','--requires']:return 'kwin\nqt6-qtbase\nqt6-qtdeclarative'
+                if argv[:3]==['rpm','-qp','--provides']:
+                    return 'oled-window-guard-native-kwin = 6.8.2\noled-window-guard-native-qt = 6.11.2'
+                if argv==['rpm','-q','--qf','%{VERSION}','kwin']:return '6.8.2'
+                return self.runner(argv)
+            self.assertEqual(U.validate_rpm(folder,runner=modern)[0],self.offer)
+            for declarations in ('oled-window-guard-native-kwin = 6.8.2',
+                'oled-window-guard-native-kwin = 6.8.3\noled-window-guard-native-qt = 6.11.2',
+                'oled-window-guard-native-kwin = 6.8.2\noled-window-guard-native-qt = 6.12.0',
+                'oled-window-guard-native-kwin = 6.8.2\noled-window-guard-native-kwin = 6.8.2\noled-window-guard-native-qt = 6.11.2'):
+                def bad(argv):
+                    return declarations if argv[:3]==['rpm','-qp','--provides'] else modern(argv)
+                with self.subTest(declarations=declarations),self.assertRaises(ValueError):U.validate_rpm(folder,runner=bad)
 
     def test_worker_preserves_settings_and_restarts_after_success_cancel_and_failure(self):
         for code in (0, 126, 1):

@@ -122,6 +122,7 @@ def worker(root, app_root):
         # Activate a real exported Qt menu item; the injected GUI client records
         # the intent without loading any writer or real movement controller.
         service,path,_=attachments[-1]
+        exported_version=int(bus.get_object(service,path).Get('com.canonical.dbusmenu','Version',dbus_interface='org.freedesktop.DBus.Properties'))
         bus.get_object(service,path).Event(dbus.Int32(m['Start movement guarding']['id']),'clicked',dbus.Int32(0),dbus.UInt32(0),dbus_interface='com.canonical.dbusmenu')
         wait(lambda:(root/'intents.jsonl').exists())
         assert json.loads((root/'intents.jsonl').read_text().splitlines()[-1])['action']=='ResumeMovement'
@@ -175,7 +176,7 @@ def worker(root, app_root):
         assert child.poll()==0,(root/'gui.log').read_text()
         pump();assert attachments[-1][:2]==('',''),attachments
         cases.append('quit-detaches-live-menu')
-        result=dict(result='PASS',cases=cases,privateVirtualKwin=True,normalDesktopUntouched=True,appRoot=str(app_root))
+        result=dict(result='PASS',cases=cases,privateVirtualKwin=True,normalDesktopUntouched=True,appRoot=str(app_root),exportedMenuVersion=exported_version)
         (root/'result.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))
     finally:
         if child and child.poll() is None:child.terminate();child.wait(timeout=10)

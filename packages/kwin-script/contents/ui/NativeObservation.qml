@@ -2,6 +2,7 @@ import QtQuick
 import org.kde.kwin
 import "core/native_observation.js" as Native
 import "core/interaction_policy.js" as Policy
+import "core/native_compatibility.js" as Compatibility
 
 QtObject {
     id: consumer
@@ -15,6 +16,34 @@ QtObject {
     property double lastImmediateGeneration: -1
     readonly property string source: immediateCancellation?"compositor-local":state.available?"diagnostic-probe":"unavailable"
     property string loadError: ""
+    // Stamped from validated build metadata by the package builder.
+    property string expectedKwin: ""
+    property string expectedQt: ""
+    property bool compatibilityPending: true
+    property DBusCall compatibilityCall: DBusCall {
+        service: "org.kde.KWin"
+        path: "/KWin"
+        dbusInterface: "org.kde.KWin"
+        method: "supportInformation"
+        onFinished: function(values) {
+            if (!consumer.compatibilityPending) return;
+            consumer.compatibilityPending = false;
+            if (values && values.length === 1 && Compatibility.compatible(values[0], consumer.expectedKwin, consumer.expectedQt))
+                consumer.loadCompatibleObserver();
+            else consumer.loadError = "OWG paused: native plugin does not match the running KWin/Qt. A compatible OWG build is required.";
+        }
+        onFailed: {
+            consumer.compatibilityPending = false;
+            consumer.loadError = "OWG paused: unable to verify the running KWin/Qt version.";
+        }
+    }
+    property Timer compatibilityTimeout: Timer {
+        interval: 3000; running: consumer.compatibilityPending
+        onTriggered: {
+            consumer.compatibilityPending = false;
+            consumer.loadError = "OWG paused: KWin compatibility check timed out.";
+        }
+    }
     signal canceled(string reason)
     signal sampled()
     signal activityObserved(string reason)
@@ -117,7 +146,7 @@ QtObject {
             consumer.refresh()
         }
     }
-    Component.onCompleted: {
+    function loadCompatibleObserver() {
         // Optional native module: missing/mismatched builds preserve diagnostic
         // previews while never supplying the immediate cancellation capability.
         try {
@@ -129,4 +158,5 @@ QtObject {
         } catch(error) { localObserver=null;loadError=String(error) }
         refresh()
     }
+    Component.onCompleted: compatibilityCall.call()
 }

@@ -609,9 +609,9 @@ class Dashboard(QMainWindow):
 
     def _build_about(self) -> None:
         layout = self._page("About", "Keep your windows moving.\nCare for your OLED.")
-        form = self._card(layout, "OLED Window Guard 1.0.6 · Dr. Brett Addison")
+        form = self._card(layout, "OLED Window Guard 1.0.7 · Dr. Brett Addison")
         self.about_text = self._help(form, "Guarded movement and software dimming for your desktop. Original KDE implementation: GNU GPL version 3 or later. Shared schema and interfaces: MIT. Third-party components retain their own licences.")
-        self._help(form, "OWG is provided without warranty. It cannot guarantee prevention of image retention or burn-in. The supported package targets Fedora 44, KWin 6.7.5 and Qt 6.11.2. Enable Resume guarding after unlock or wake in Safety & alerts to continue previously active guarding after a session interruption.")
+        self._help(form, "OWG is provided without warranty. It cannot guarantee prevention of image retention or burn-in. The supported package targets Fedora 44, KWin 6.8.2 and Qt 6.11.2. Enable Resume guarding after unlock or wake in Safety & alerts to continue previously active guarding after a session interruption.")
         self.package_update_label = self._help(form, "")
         self.check_updates_button = QPushButton("Check for updates")
         self.check_updates_button.clicked.connect(lambda: self.refresh_package_status(check_github=True))
@@ -904,7 +904,7 @@ class Dashboard(QMainWindow):
             "input-state-unknown-or-held": "Release held input. After startup or a display change, click and release on each desktop to establish input state.",
             "output-activity-unknown": "Click and release on each display’s desktop, then let input settle.",
             "output-set-mismatch": "Displays are changing. Wait for the layout to settle and review your selections.",
-            "native-unavailable": "The compositor connection is unavailable. Reopen OWG; check About for supported versions.",
+            "native-unavailable": "Guarding is unavailable. Check About for supported KWin/Qt versions; after a desktop upgrade, a compatible OWG build may be required.",
             "interaction-coverage-unavailable": "Reopen OWG to load its matching input observer.",
             "native-write-coverage-unavailable": "Input observation is unavailable or an unsupported input device was used. Reopen OWG to recheck readiness.",
             "quiet-period-incomplete": "Waiting for the quiet time set in Safety & alerts.",

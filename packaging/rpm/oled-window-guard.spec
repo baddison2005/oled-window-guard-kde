@@ -3,10 +3,14 @@
 %global app_id oled-window-guard
 %global app_root %{_libexecdir}/oled-window-guard
 %global kpackage_id oled-window-guard-adapter
+# This optional, preflight-gated plugin must not keep an obsolete KWin SONAME
+# installed after a future desktop ABI transition. Runtime packages are explicit.
+%global __requires_exclude_from ^%{_datadir}/kwin/scripts/%{kpackage_id}/.*libowg_native_observer\.so$
+%global __provides_exclude_from ^%{_datadir}/kwin/scripts/%{kpackage_id}/.*libowg_native_observer\.so$
 %{!?owg_native_prefix:%global owg_native_prefix /usr}
 
 Name:           oled-window-guard
-Version:        1.0.6
+Version:        1.0.7
 Release:        %{?owg_release}%{!?owg_release:1}%{?dist}
 Summary:        Window movement and software dimming for KDE Plasma
 License:        GPL-3.0-or-later AND MIT
@@ -14,7 +18,7 @@ Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  python3
 %if !%{defined owg_native_module}
 BuildRequires:  gcc-c++
-BuildRequires:  kwin-devel = 6.7.5
+BuildRequires:  kwin-devel = 6.8.2
 BuildRequires:  qt6-qtbase-devel = 6.11.2
 BuildRequires:  qt6-qtdeclarative-devel = 6.11.2
 BuildRequires:  kf6-kcoreaddons-devel
@@ -27,17 +31,22 @@ BuildRequires:  xcb-util-cursor-devel
 BuildRequires:  xcb-util-keysyms-devel
 %endif
 
-# PySide6 supplies Qt 6 and QtDBus bindings. KWin is constrained to the
-# exercised target. The passive native observer is bundled in the script;
-# test injectors are never packaged. Runtime mismatch still fails closed.
+# Build dependencies remain pinned to the exercised native target. Runtime
+# packages must be free to update together. The QML loader checks running
+# KWin/Qt versions BEFORE importing the bundled native plugin.
 Requires:       python3 >= 3.11
 Requires:       python3-pyside6
 Requires:       python3-rpm
 Requires:       /usr/bin/pkexec
 Requires:       /usr/bin/dnf
-Requires:       kwin = 6.7.5
-Requires:       qt6-qtbase = 6.11.2
-Requires:       qt6-qtdeclarative = 6.11.2
+Requires:       kwin
+Requires:       qt6-qtbase
+Requires:       qt6-qtdeclarative
+Requires:       kf6-kcoreaddons
+# Build-target declarations inform the updater without constraining the system
+# packages. Unknown future ABIs are refused before the native ELF is imported.
+Provides:       oled-window-guard-native-kwin = 6.8.2
+Provides:       oled-window-guard-native-qt = 6.11.2
 
 %description
 OLED Window Guard provides a desktop dashboard and guarded KWin window
@@ -91,7 +100,7 @@ paths=list(package.rglob("build-info.json"))
 assert len(paths)==2, "canonical and immutable native metadata required"
 for path in paths:
     info=json.loads(path.read_text())
-    assert info["kwinVersion"]=="6.7.5" and info["qtVersion"]=="6.11.2"
+    assert info["kwinVersion"]=="6.8.2" and info["qtVersion"]=="6.11.2"
     binaries=list(path.parent.rglob("libowg_native_observer.so"))
     assert len(binaries)==1
     info["unstrippedPluginSHA256"]=info.get("unstrippedPluginSHA256",info["pluginSHA256"])
@@ -116,6 +125,15 @@ fi
 %{_datadir}/kwin/scripts/%{kpackage_id}/
 
 %changelog
+* Mon Nov 02 2026 Dr. Brett Addison - 1.0.7-1
+- Support KWin 6.8.2 without constraining future KDE package upgrades
+- Gate native imports on running versions and declare updater build targets
+
+* Mon Nov 02 2026 Dr. Brett Addison - 1.0.6-2
+- Allow desktop upgrades without holding back KWin or Qt runtime packages
+- Check running compositor versions before importing the native observer
+- Keep guarding disabled on unvalidated KWin versions pending compatibility testing
+
 * Fri Oct 23 2026 Dr. Brett Addison - 1.0.6-1
 - Restore the last verified move independently of the Overview display
 - Name the restore monitor in menus and select it for the restore preview

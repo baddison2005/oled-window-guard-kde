@@ -153,8 +153,12 @@ def validate_rpm(folder, *, runner=_run):
     if not installed['installed'] or not newer(offer, installed['version']):
         raise ValueError('This RPM is not newer than the installed package')
     requirements = runner(['rpm', '-qp', '--requires', str(path)]).splitlines()
+    provides = runner(['rpm', '-qp', '--provides', str(path)]).splitlines()
+    declared = any(line.startswith('oled-window-guard-native-') for line in provides)
     for name in ('kwin', 'qt6-qtbase', 'qt6-qtdeclarative'):
-        values = [line.removeprefix(name + ' = ') for line in requirements if line.startswith(name + ' = ')]
+        capability='oled-window-guard-native-'+('kwin' if name=='kwin' else 'qt')
+        prefix=(capability if declared else name)+' = '
+        values = [line.removeprefix(prefix) for line in (provides if declared else requirements) if line.startswith(prefix)]
         if len(values) != 1 or values[0] != runner(['rpm', '-q', '--qf', '%{VERSION}', name]):
             raise ValueError(f'This update requires a different or unsupported {name} version')
     return offer, path

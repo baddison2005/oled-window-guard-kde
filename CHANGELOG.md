@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.7 — 2026-11-02
+
+- Support Plasma’s version 4 menu exporter as well as Qt’s version 2, restoring Cairo-Dock live menu attachment after the Plasma update.
+- Rebuild and validate the native observer for KWin/Plasma 6.8.2 and Qt/PySide6 6.11.2 on Fedora 44.
+- Permit KWin and Qt runtime packages to update together instead of pinning KDE to obsolete versions. Exclude optional native ELF dependencies from automatic RPM requirements/provides.
+- Verify the running KWin and Qt before importing the version-coupled native plugin; missing, ambiguous, failed, timed-out or mismatched checks refuse loading.
+- Declare native build targets separately from runtime package constraints and validate those declarations in the updater, retaining legacy release validation.
+
+## 1.0.6-2 recovery packaging — 2026-11-02
+
+- Remove exact KWin and Qt runtime package requirements so KDE can update together.
+- Verify the running KWin/Qt versions before loading the optional native plugin;
+  missing, ambiguous, mismatched, failed or timed-out checks refuse loading.
+- Retain the tested 6.7.5 native target and companion safety checks. This package
+  does not claim KWin 6.8.2 guarding support; rebuild and desktop validation follow
+  after KDE recovery.
+
 ## 1.0.6 — 2026-10-23
 
 - Make Restore last move and the shared Restore previous position menu action follow the most recent verified move on any monitor, independently of Overview selection.

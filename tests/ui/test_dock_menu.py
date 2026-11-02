@@ -1,3 +1,5 @@
+import os
+os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 import threading
 import time
 import unittest
@@ -15,6 +17,7 @@ class FakeBus:
         self.menu_pid = 42
         self.controller_pid = 42
         self.items = [':1.30/StatusNotifierItem']
+        self.version = 2
         self.calls = []
 
     def owner(self, name):
@@ -32,7 +35,7 @@ class FakeBus:
         if args[-1] == 'Menu':
             return '/MenuBar'
         if args[-1] == 'Version':
-            return 2
+            return self.version
         raise AssertionError((service, path, interface, method, args))
 
 
@@ -58,6 +61,14 @@ class DockMenuTests(unittest.TestCase):
         self.assertIsNone(own_tray_menu(bus, 42))
         self.assertFalse(MenuAttachment(42, lambda: bus).bind())
         self.assertEqual(bus.calls, [])
+
+    def test_qt_and_plasma_exporters_are_supported_unknown_versions_are_refused(self):
+        for version in (2,4):
+            bus=FakeBus();bus.version=version
+            self.assertEqual(own_tray_menu(bus,42),(':1.30','/MenuBar'))
+        for version in (0,1,3,5,'4',None):
+            bus=FakeBus();bus.version=version
+            self.assertIsNone(own_tray_menu(bus,42))
 
     def test_refresh_covers_restarted_dock_and_cleanup_respects_new_controller(self):
         bus = FakeBus(); link = MenuAttachment(42, lambda: bus)

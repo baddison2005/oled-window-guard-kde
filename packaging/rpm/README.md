@@ -2,7 +2,13 @@
 
 The RPM includes the Python/Qt dashboard, settings schema, desktop entry, icon,
 warning sound and KWin package with its passive native observer. Test injectors
-are not installed. Runtime dependencies require Fedora's KWin 6.7.5 and Qt 6.11.2;
+are not installed. Native builds target KWin 6.8.2 and Qt 6.11.2, while runtime
+dependencies do not pin desktop package versions. Before importing the optional
+native plugin, the loader checks the running compositor's KWin and Qt versions
+through D-Bus supportInformation. Unknown or mismatched versions leave guarding
+unavailable. The companion's tested-version checks remain in place. The optional
+private plugin is excluded from RPM ELF dependency/provides generation so it
+cannot retain an obsolete KWin SONAME after a desktop ABI transition.
 Python/PySide6 are provided by the system. The app starts paused and login startup
 is opt-in.
 
@@ -13,7 +19,7 @@ plus `rpm-build`, then build from the source root:
 rpm_top=$(mktemp -d /tmp/owg-rpm.XXXXXX)
 mkdir -p "$rpm_top"/{SOURCES,SPECS,BUILD,BUILDROOT,RPMS,SRPMS,tmp}
 python3 packaging/rpm/make-source.py
-cp oled-window-guard-1.0.2.tar.gz "$rpm_top/SOURCES/"
+cp oled-window-guard-1.0.6.tar.gz "$rpm_top/SOURCES/"
 rpmbuild -ba --define "_topdir $rpm_top" --define "_tmppath $rpm_top/tmp" packaging/rpm/oled-window-guard.spec
 ```
 

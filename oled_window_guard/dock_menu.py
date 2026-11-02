@@ -63,7 +63,9 @@ def own_tray_menu(bus, pid):
             if not isinstance(menu, str) or not menu.startswith('/') or menu == '/' or len(menu) > 256:
                 continue
             version = bus.call(service, menu, 'org.freedesktop.DBus.Properties', 'Get', 'com.canonical.dbusmenu', 'Version')
-            if version == 2:
+            # Qt's native exporter uses v2; Plasma's platform exporter uses v4.
+            # Both expose the GetLayout/Event API consumed by Cairo-Dock.
+            if version in (2, 4):
                 candidates.add((service, menu))
         except RuntimeError:
             continue

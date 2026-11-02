@@ -8,7 +8,7 @@ contributors or external assets. This does not assert ownership of dependencies.
 ## KWin
 
 The native observer dynamically links `libkwin.so.6` and uses KWin headers.
-The inspected Fedora `kwin-devel-6.7.5-1.fc44.x86_64` package has a valid Fedora
+The inspected Fedora `kwin-devel-6.8.2-2.fc44.x86_64` package has a valid Fedora
 signature. Its directly used API headers carry GPL-2.0-or-later notices, including:
 
 - Matthias Ettrich; Lubos Lunak; Lucas Murray; Martin Gräßlin; Roman Gilg;

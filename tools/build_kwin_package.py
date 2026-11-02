@@ -34,6 +34,11 @@ def native_files(module):
     relative=Path("native")/build_id/base
     descriptor=f"module org.oledwindowguard.Native.Build_{build_id}\nplugin owg_native_observer\n"
     loader=(ROOT/"packages/kwin-script/contents/ui/NativeObservation.qml").read_text()
+    for property_name, metadata_key in (("expectedKwin", "kwinVersion"), ("expectedQt", "qtVersion")):
+        marker = f'property string {property_name}: ""'
+        if loader.count(marker) != 1:
+            raise ValueError("unexpected native compatibility gate")
+        loader = loader.replace(marker, f'property string {property_name}: {json.dumps(info[metadata_key])}')
     marker="./native/org/oledwindowguard/Native"
     if loader.count(marker)!=1:
         raise ValueError("unexpected native observer loader")
