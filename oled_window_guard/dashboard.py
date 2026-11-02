@@ -609,7 +609,7 @@ class Dashboard(QMainWindow):
 
     def _build_about(self) -> None:
         layout = self._page("About", "Keep your windows moving.\nCare for your OLED.")
-        form = self._card(layout, "OLED Window Guard 1.0.7 · Dr. Brett Addison")
+        form = self._card(layout, "OLED Window Guard 1.0.8 · Dr. Brett Addison")
         self.about_text = self._help(form, "Guarded movement and software dimming for your desktop. Original KDE implementation: GNU GPL version 3 or later. Shared schema and interfaces: MIT. Third-party components retain their own licences.")
         self._help(form, "OWG is provided without warranty. It cannot guarantee prevention of image retention or burn-in. The supported package targets Fedora 44, KWin 6.8.2 and Qt 6.11.2. Enable Resume guarding after unlock or wake in Safety & alerts to continue previously active guarding after a session interruption.")
         self.package_update_label = self._help(form, "")
@@ -1091,7 +1091,13 @@ class Dashboard(QMainWindow):
 
 def create_application(argv: list[str] | None = None) -> QApplication:
     """Use one Qt application per process; callers own the sole controller."""
-    app = QApplication.instance() or QApplication(argv or [])
+    app = QApplication.instance()
+    if app is None:
+        # Background/terminal launchers may lack XDG_CURRENT_DESKTOP. Select
+        # Plasma's integration before Qt starts so KDE colours and live theme
+        # changes work there too; retain an explicitly chosen platform theme.
+        os.environ.setdefault("QT_QPA_PLATFORMTHEME", "kde")
+        app = QApplication(argv or [])
     app.setApplicationName("OLED Window Guard")
     app.setDesktopFileName("oled-window-guard")
     app.setWindowIcon(application_icon())

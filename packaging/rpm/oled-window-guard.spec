@@ -10,7 +10,7 @@
 %{!?owg_native_prefix:%global owg_native_prefix /usr}
 
 Name:           oled-window-guard
-Version:        1.0.7
+Version:        1.0.8
 Release:        %{?owg_release}%{!?owg_release:1}%{?dist}
 Summary:        Window movement and software dimming for KDE Plasma
 License:        GPL-3.0-or-later AND MIT
@@ -43,6 +43,7 @@ Requires:       kwin
 Requires:       qt6-qtbase
 Requires:       qt6-qtdeclarative
 Requires:       kf6-kcoreaddons
+Requires:       plasma-integration
 # Build-target declarations inform the updater without constraining the system
 # packages. Unknown future ABIs are refused before the native ELF is imported.
 Provides:       oled-window-guard-native-kwin = 6.8.2
@@ -125,6 +126,10 @@ fi
 %{_datadir}/kwin/scripts/%{kpackage_id}/
 
 %changelog
+* Mon Nov 02 2026 Dr. Brett Addison - 1.0.8-1
+- Select KDE Qt theme integration for background and terminal launchers
+- Honor desktop light/dark colours and explicit platform-theme overrides
+
 * Mon Nov 02 2026 Dr. Brett Addison - 1.0.7-1
 - Support KWin 6.8.2 without constraining future KDE package upgrades
 - Gate native imports on running versions and declare updater build targets

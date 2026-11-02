@@ -6,6 +6,10 @@ OLED Window Guard automatically shifts and rearranges application windows and di
 
 Created by **Dr. Brett Addison**. This is the KDE Plasma edition; the [macOS edition](https://github.com/baddison2005/oled-window-guard) is maintained separately.
 
+## v1.0.8: KDE theme restoration
+
+OWG now selects KDE’s Qt theme integration when no platform-theme override is set. Dark and light desktop colours apply even when OWG is opened from a terminal or background launcher without KDE theme environment variables. Explicit `QT_QPA_PLATFORMTHEME` choices are retained. This update keeps the v1.0.7 KWin/Qt compatibility and packaging fixes.
+
 ## Emergency v1.0.7: KDE upgrade compatibility
 
 Earlier OWG packages pinned KWin and Qt runtime versions, which could stop those packages from updating alongside the rest of KDE. **v1.0.7 removes those runtime pins and restores guarding on KWin/Plasma 6.8.2 with Qt/PySide6 6.11.2.**
@@ -112,24 +116,24 @@ Check the installed package and GitHub for a newer compatible release.
 
 ## Supported system
 
-The v1.0.7 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.8.2 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
+The v1.0.8 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.8.2 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
 
 The native observer uses version-specific KWin interfaces. Runtime RPM dependencies permit desktop updates; OWG checks compatibility before importing its native plugin and leaves guarding unavailable on unverified KWin/Qt versions until a matching OWG build is installed. This is not a generic package for every Plasma release or distribution. XWayland application windows are supported inside the tested Wayland session; an X11 desktop session is not supported.
 
 ## Install
 
-1. Download `oled-window-guard-1.0.7-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.7](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.7).
+1. Download `oled-window-guard-1.0.8-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.8](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.8).
 2. In the download directory, verify the RPM checksum against `SHA256SUMS`:
 
    ```sh
-   sha256sum oled-window-guard-1.0.7-1.fc44.x86_64.rpm
+   sha256sum oled-window-guard-1.0.8-1.fc44.x86_64.rpm
    ```
 
 3. Quit an existing OWG session, then install:
 
    ```sh
    oled-window-guard quit  # Only needed if OWG is already running.
-   sudo dnf install ./oled-window-guard-1.0.7-1.fc44.x86_64.rpm
+   sudo dnf install ./oled-window-guard-1.0.8-1.fc44.x86_64.rpm
    ```
 
 4. Open **OLED Window Guard** from the application launcher, or run `oled-window-guard open`.
@@ -142,7 +146,7 @@ For an upgrade, quit OWG before installing the new RPM. If you previously instal
 
 **About → Check for updates** queries the official GitHub repository only when requested. A newer Fedora 44 x86_64 RPM shows **Download and upgrade**. A failed/offline check is reported as an error rather than as “up to date.” Checking alone does not download an RPM or install anything.
 
-For the emergency upgrade from v1.0.6 or earlier (including the local recovery revision), install the downloaded v1.0.7 RPM using the DNF command above. The older updater expects pinned runtime requirements and cannot validate this new package format. If KDE is still on an older version, OWG will remain paused/unavailable until KDE is updated to the supported matrix.
+For the emergency upgrade from v1.0.6 or earlier (including the local recovery revision), install the latest downloaded RPM using the DNF command above. The older updater expects pinned runtime requirements and cannot validate this new package format. If KDE is still on an older version, OWG will remain paused/unavailable until KDE is updated to the supported matrix.
 
 Confirm the upgrade to download it. OWG verifies GitHub's SHA-256 asset digest, the RPM name/version/architecture and its native KWin/Qt build-target declarations before closing. The session helper closes the existing controller and unloads its compositor runtime, then DNF requests administrator authorization. Settings and login preferences are backed up and retained. The app reopens paused, including after cancelled authorization or an installation failure. The reopened About page reports the result. Failed download or preflight checks leave the running app in place.
 
@@ -220,7 +224,7 @@ python3 -m unittest discover -s tests/packaging
 
 `tests/integration/run_*.py` contains separate private-compositor and physical acceptance runners. They are not part of the unit-test commands above; read their prerequisites before running them. Some historical DNF/signing rehearsal runners require private development artifacts that are not included in this repository.
 
-See the [v1.0.7 review](docs/RELEASE_REVIEW_v1.0.7.md) and [changelog](CHANGELOG.md) for release scope and validation.
+See the [v1.0.8 review](docs/RELEASE_REVIEW_v1.0.8.md) and [v1.0.7 compatibility review](docs/RELEASE_REVIEW_v1.0.7.md) and [changelog](CHANGELOG.md) for release scope and validation.
 
 ## License
 

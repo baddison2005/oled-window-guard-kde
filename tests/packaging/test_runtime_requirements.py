@@ -9,6 +9,7 @@ class RuntimeRequirementsTests(unittest.TestCase):
     def test_target_is_not_a_runtime_package_pin(self):
         source=(Path(__file__).resolve().parents[2]/'packaging/rpm/oled-window-guard.spec').read_text()
         requirements=re.findall(r'^Requires:\s*(.*?)\s*$',source,re.M)
+        self.assertIn('plasma-integration',requirements)
         for name in ('kwin','qt6-qtbase','qt6-qtdeclarative'):
             self.assertIn(name,requirements)
             self.assertFalse(any(line.startswith(name+' ') for line in requirements))

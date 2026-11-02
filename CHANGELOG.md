@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.8 — 2026-11-02
+
+- Restore KDE theme integration when OWG starts from a terminal or background launcher without desktop theme environment variables.
+- Use the configured KDE dark or light palette instead of Qt’s default light palette; retain explicit QT_QPA_PLATFORMTHEME overrides and live palette updates.
+- Declare the unversioned plasma-integration runtime dependency. Movement, brightness guarding and native compatibility checks are unchanged.
+
 ## 1.0.7 — 2026-11-02
 
 - Support Plasma’s version 4 menu exporter as well as Qt’s version 2, restoring Cairo-Dock live menu attachment after the Plasma update.

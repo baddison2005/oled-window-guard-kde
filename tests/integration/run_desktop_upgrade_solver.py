@@ -58,6 +58,7 @@ Provides: /usr/bin/dnf
 Provides: /usr/bin/pkexec
 Provides: /usr/bin/sh
 Provides: kf6-kcoreaddons
+Provides: plasma-integration
 %description -n owg-test-dependencies
 Private dependency fixture.
 %files -n owg-test-dependencies
