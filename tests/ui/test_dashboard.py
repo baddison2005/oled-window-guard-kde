@@ -406,6 +406,17 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.window.group_combo.currentData(), "kde:custom-pair")
         self.assertTrue(self.window.group_combo.currentText().startswith("Unavailable:"))
 
+    def test_warning_position_control_in_safety_persists_each_choice(self):
+        from oled_window_guard import preferences
+        control=self.window.controls['warningPosition']
+        self.assertEqual([control.itemText(i) for i in range(control.count())],
+            ['Top left','Top centre','Top right','Random within top 25%'])
+        self.assertEqual(control.currentData(),'topCenter')
+        self.assertTrue(self.window.tabs.widget(2).isAncestorOf(control))
+        for value in ('random','topRight','topLeft','topCenter'):
+            control.setCurrentIndex(control.findData(value))
+            self.assertEqual(preferences.load_settings(self.window.settings_path).values['warningPosition'],value)
+
     def test_live_theme_change_updates_text_contrast(self):
         from PySide6.QtGui import QPalette, QColor
         original = self.app.palette()

@@ -10,7 +10,7 @@
 %{!?owg_native_prefix:%global owg_native_prefix /usr}
 
 Name:           oled-window-guard
-Version:        1.0.8
+Version:        1.1.0
 Release:        %{?owg_release}%{!?owg_release:1}%{?dist}
 Summary:        Window movement and software dimming for KDE Plasma
 License:        GPL-3.0-or-later AND MIT
@@ -126,6 +126,10 @@ fi
 %{_datadir}/kwin/scripts/%{kpackage_id}/
 
 %changelog
+* Thu Nov 12 2026 Dr. Brett Addison - 1.1.0-1
+- Add fixed and random top-quarter warning placement in Safety & alerts
+- Apply placement to movement and Restore with confirmed, stable geometry
+
 * Mon Nov 02 2026 Dr. Brett Addison - 1.0.8-1
 - Select KDE Qt theme integration for background and terminal launchers
 - Honor desktop light/dark colours and explicit platform-theme overrides

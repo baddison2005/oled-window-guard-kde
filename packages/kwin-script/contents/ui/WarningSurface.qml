@@ -2,6 +2,7 @@ import QtQuick
 import org.kde.kwin
 import org.kde.plasma.core as PlasmaCore
 import "core/warning_clock.js" as Clock
+import "core/warning_placement.js" as Placement
 
 // Presentation adapter; writers require confirmed warning removal before assignment.
 QtObject {
@@ -64,23 +65,22 @@ QtObject {
         }
         return count
     }
-    function showForOutput(generation, bounds, durationMs) {
+    function showForOutput(generation, bounds, durationMs, position, screenBounds) {
         if (activeGeneration >= 0 || !bounds || !isFinite(bounds.x) || !isFinite(bounds.y)
                 || !isFinite(bounds.width) || !isFinite(bounds.height) || bounds.width < 264
                 || bounds.height < 150 || !isFinite(durationMs) || durationMs < 3000 || durationMs > 60000) {
             failed(generation, "invalid-or-busy-warning")
             return
         }
+        var chosen=Placement.geometry(bounds,screenBounds || bounds,
+            position===undefined?"topCenter":position,Math.random(),Math.random())
+        if (!chosen) {failed(generation,"invalid-warning-placement");return}
         warningDuration = durationMs
         clockState=null;placementConfirmed=false;countdownNow=0
         activeGeneration = generation
         expiresAt = Date.now()+durationMs
         focusBefore = Workspace.activeWindow
-        targetGeometry = {
-            x: Math.round(bounds.x + (bounds.width - Math.min(390, bounds.width - 24)) / 2),
-            y: Math.round(bounds.y + 12),
-            width: Math.min(390, bounds.width - 24), height: 126
-        }
+        targetGeometry = chosen
         placementChecks = 0
         warning.width = targetGeometry.width
         warning.height = targetGeometry.height

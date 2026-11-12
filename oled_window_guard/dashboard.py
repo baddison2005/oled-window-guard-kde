@@ -429,7 +429,7 @@ class Dashboard(QMainWindow):
             control.valueChanged.connect(changed)
         else:
             control = QComboBox()
-            modes = {"stay-bright":"Stay bright until I interact with a window", "restart-timers":"Restore brightness and restart dimming timers", "drift": "Shift within free space", "swap": "Swap positions", "group": "Move within layout groups"}
+            modes = {"stay-bright":"Stay bright until I interact with a window", "restart-timers":"Restore brightness and restart dimming timers", "drift": "Shift within free space", "swap": "Swap positions", "group": "Move within layout groups", "topLeft":"Top left", "topCenter":"Top centre", "topRight":"Top right", "random":"Random within top 25%"}
             for option in spec.get("enum", [value]): control.addItem(modes.get(option, option), option)
             control.setCurrentIndex(control.findData(value))
             control.currentIndexChanged.connect(lambda _: callback(control.currentData()))
@@ -494,7 +494,10 @@ class Dashboard(QMainWindow):
     def _build_safety(self) -> None:
         layout = self._page("Safety & alerts", "Predictable movement starts with sensible boundaries.")
         form = self._card(layout, "Before every move", "An on-screen countdown appears before every move and Restore. Sound can play when the countdown starts. Optional desktop summaries arrive after guarding pauses. Your KDE audio and notification settings apply.")
-        for key, label in (("warningSeconds", "Warning countdown (seconds)"), ("soundEnabled", "Play a sound when a warning starts"), ("systemNotifications", "Send a summary notification when guarding pauses")):
+        self._setting_control("warningSeconds", "Warning countdown (seconds)", form)
+        self._setting_control("warningPosition", "Warning dialog position", form)
+        self._help(form, "Applies to movement and Restore warnings on the affected display. Random chooses a fresh position for each warning and stays there during the countdown, keeping the whole dialog in the top 25% where it fits. Panels and docks are respected; on short displays it stays at the top and varies horizontally.")
+        for key, label in (("soundEnabled", "Play a sound when a warning starts"), ("systemNotifications", "Send a summary notification when guarding pauses")):
             self._setting_control(key, label, form)
         self.test_sound = QPushButton("Test warning sound")
         self.test_sound.clicked.connect(lambda: self.warning_audio.play())
@@ -609,7 +612,7 @@ class Dashboard(QMainWindow):
 
     def _build_about(self) -> None:
         layout = self._page("About", "Keep your windows moving.\nCare for your OLED.")
-        form = self._card(layout, "OLED Window Guard 1.0.8 · Dr. Brett Addison")
+        form = self._card(layout, "OLED Window Guard 1.1.0 · Dr. Brett Addison")
         self.about_text = self._help(form, "Guarded movement and software dimming for your desktop. Original KDE implementation: GNU GPL version 3 or later. Shared schema and interfaces: MIT. Third-party components retain their own licences.")
         self._help(form, "OWG is provided without warranty. It cannot guarantee prevention of image retention or burn-in. The supported package targets Fedora 44, KWin 6.8.2 and Qt 6.11.2. Enable Resume guarding after unlock or wake in Safety & alerts to continue previously active guarding after a session interruption.")
         self.package_update_label = self._help(form, "")

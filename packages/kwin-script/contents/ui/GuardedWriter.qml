@@ -96,7 +96,7 @@ QtObject {
             warning.windowCount=1
             planning.nativeObservation.startWarningGrace(Math.min(configuration.settings.quietSeconds,configuration.settings.warningSeconds)*1000)
             nativeToken=planning.nativeObservation.cancellationToken()
-            warning.showForOutput(state.generation,output.usableRect,command.durationMs)
+            warning.showForOutput(state.generation,output.usableRect,command.durationMs,configuration.settings.warningPosition,output.geometry)
         } else if (command.type==="hideWarning") {
             warning.hideForGeneration(warning.activeGeneration)
         } else if (command.type==="requestSnapshot") {

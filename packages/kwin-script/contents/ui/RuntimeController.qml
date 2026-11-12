@@ -281,7 +281,7 @@ QtObject {
         pending=Object.assign({},pending,{stage:"warning",warningGeneration:generation,issued:true})
         planning.nativeObservation.startWarningGrace(Math.min(settings.quietSeconds,settings.warningSeconds)*1000)
         observer.warningSurface.restoring=false;observer.warningSurface.windowCount=0
-        observer.warningSurface.showForOutput(generation,output.usableRect,settings.warningSeconds*1000)
+        observer.warningSurface.showForOutput(generation,output.usableRect,settings.warningSeconds*1000,settings.warningPosition,output.geometry)
         planning.prepareWarning(pending.id+":warning",pending.outputId,pending.seed)
     }
     property Connections movementWarning: Connections {

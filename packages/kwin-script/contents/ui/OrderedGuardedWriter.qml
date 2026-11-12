@@ -136,7 +136,7 @@ QtObject {
         warning.windowCount=warningProposal.plan.moves.length
         planning.nativeObservation.startWarningGrace(Math.min(configuration.settings.quietSeconds,configuration.settings.warningSeconds)*1000)
         nativeToken=planning.nativeObservation.cancellationToken()
-        warning.showForOutput(state.generation,output.usableRect,configuration.settings.warningSeconds*1000)
+        warning.showForOutput(state.generation,output.usableRect,configuration.settings.warningSeconds*1000,configuration.settings.warningPosition,output.geometry)
     }
     function restore() {
         // Consume at request time, including refused requests. No skip, stale

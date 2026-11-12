@@ -106,7 +106,8 @@ def worker(temp):
     for module in ("model.js", "registry.js", "planner.js", "safety.js", "transaction.js"):
         shutil.copy2(ROOT / "core" / module, code / module)
     (ui / "core").mkdir()
-    shutil.copy2(ROOT / "core/warning_clock.js", ui / "core/warning_clock.js")
+    for module in ("warning_clock.js","warning_placement.js"):
+        shutil.copy2(ROOT / "core" / module, ui / "core" / module)
     shutil.copy2(PRODUCTION, ui / "WarningSurface.qml")
     probe_source = PROBE.read_text().replace("screens[0]", f"screens[{target_output}]")
     if owned_on_target:

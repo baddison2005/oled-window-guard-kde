@@ -23,6 +23,7 @@ class PreferenceTests(unittest.TestCase):
         self.assertEqual(d["dimmingDisplays"], [])
         self.assertEqual(d["intervalMinutes"], 10)
         self.assertEqual(d["warningSeconds"], 10)
+        self.assertEqual(d["warningPosition"], "topCenter")
         self.assertEqual(d["mode"], "drift")
         self.assertEqual(d["shiftRangePercent"], 10)
         self.assertEqual(d["maximumWindows"], 4)
@@ -41,6 +42,17 @@ class PreferenceTests(unittest.TestCase):
         self.assertEqual(d["brightnessShortcutEnabled"], True)
         schema_defaults = {k: v["default"] for k, v in schema_metadata()["properties"].items() if "default" in v}
         self.assertEqual(d, schema_defaults)
+
+    def test_warning_placement_persists_and_old_settings_keep_top_centre(self):
+        with tempfile.TemporaryDirectory() as td:
+            path=Path(td)/'settings.json';original=b'{"schemaVersion":1,"warningSeconds":8}'
+            path.write_bytes(original)
+            self.assertEqual(load_settings(path).values['warningPosition'],'topCenter')
+            self.assertEqual(path.read_bytes(),original)
+            for value in ('topLeft','topCenter','topRight','random'):
+                save_settings(path,dict(defaults(),warningPosition=value))
+                self.assertEqual(load_settings(path).values['warningPosition'],value)
+            with self.assertRaises(SettingsError):validate_settings(dict(defaults(),warningPosition='bottomLeft'))
 
     def test_missing_and_explicit_empty_selections_are_distinguishable(self):
         with tempfile.TemporaryDirectory() as td:

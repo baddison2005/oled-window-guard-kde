@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 — 2026-11-12
+
+- Add Warning dialog position under Safety & alerts: Top left, Top centre, Top right and Random within top 25%.
+- Choose a fresh random location for each movement or Restore warning and keep it fixed throughout its countdown. Respect the display work area and fit the whole card in the top quarter where possible; short displays use the top edge and horizontal variation.
+- Preserve top-centre placement for existing settings. All movement, warning visibility, input cancellation, dimming and Restore safety checks remain in place.
+
 ## 1.0.8 — 2026-11-02
 
 - Restore KDE theme integration when OWG starts from a terminal or background launcher without desktop theme environment variables.

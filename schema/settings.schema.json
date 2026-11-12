@@ -44,6 +44,12 @@
       "maximum": 60,
       "default": 10
     },
+    "warningPosition": {
+      "type": "string",
+      "enum": ["topLeft", "topCenter", "topRight", "random"],
+      "default": "topCenter",
+      "description": "Position of movement and Restore warnings on the affected display. Random keeps the card in the top quarter where it fits."
+    },
     "mode": {
       "type": "string",
       "enum": [

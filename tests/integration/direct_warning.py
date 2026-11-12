@@ -42,6 +42,9 @@ def install_fixture(directory, env):
     package = directory / "warning-package"
     ui = package / "contents/ui"
     ui.mkdir(parents=True, exist_ok=True)
+    (ui / "core").mkdir(exist_ok=True)
+    for name in ("warning_clock.js","warning_placement.js"):
+        shutil.copy2(ROOT / "core" / name, ui / "core" / name)
     shutil.copy2(ROOT / "packages/kwin-script/contents/ui/WarningSurface.qml", ui / "WarningSurface.qml")
     shutil.copy2(ROOT / "tests/integration/warning_direct_probe.qml", ui / "main.qml")
     (package / "metadata.json").write_text(json.dumps({

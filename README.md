@@ -6,6 +6,10 @@ OLED Window Guard automatically shifts and rearranges application windows and di
 
 Created by **Dr. Brett Addison**. This is the KDE Plasma edition; the [macOS edition](https://github.com/baddison2005/oled-window-guard) is maintained separately.
 
+## v1.1.0: Warning dialog placement
+
+In **Safety & alerts → Warning dialog position**, choose **Top left**, **Top centre**, **Top right** or **Random within top 25%**. The choice applies to movement and Restore warnings on the affected monitor. Random placement chooses a new location for each warning, then stays still throughout the countdown. It keeps the whole dialog within the top quarter where it fits, respects the work area reserved for panels/docks, and falls back to the top edge with horizontal variation on short displays. Existing settings keep the previous top-centre default.
+
 ## v1.0.8: KDE theme restoration
 
 OWG now selects KDE’s Qt theme integration when no platform-theme override is set. Dark and light desktop colours apply even when OWG is opened from a terminal or background launcher without KDE theme environment variables. Explicit `QT_QPA_PLATFORMTHEME` choices are retained. This update keeps the v1.0.7 KWin/Qt compatibility and packaging fixes.
@@ -116,24 +120,24 @@ Check the installed package and GitHub for a newer compatible release.
 
 ## Supported system
 
-The v1.0.8 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.8.2 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
+The v1.1.0 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.8.2 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
 
 The native observer uses version-specific KWin interfaces. Runtime RPM dependencies permit desktop updates; OWG checks compatibility before importing its native plugin and leaves guarding unavailable on unverified KWin/Qt versions until a matching OWG build is installed. This is not a generic package for every Plasma release or distribution. XWayland application windows are supported inside the tested Wayland session; an X11 desktop session is not supported.
 
 ## Install
 
-1. Download `oled-window-guard-1.0.8-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.0.8](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.0.8).
+1. Download `oled-window-guard-1.1.0-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.1.0](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.1.0).
 2. In the download directory, verify the RPM checksum against `SHA256SUMS`:
 
    ```sh
-   sha256sum oled-window-guard-1.0.8-1.fc44.x86_64.rpm
+   sha256sum oled-window-guard-1.1.0-1.fc44.x86_64.rpm
    ```
 
 3. Quit an existing OWG session, then install:
 
    ```sh
    oled-window-guard quit  # Only needed if OWG is already running.
-   sudo dnf install ./oled-window-guard-1.0.8-1.fc44.x86_64.rpm
+   sudo dnf install ./oled-window-guard-1.1.0-1.fc44.x86_64.rpm
    ```
 
 4. Open **OLED Window Guard** from the application launcher, or run `oled-window-guard open`.
@@ -158,7 +162,7 @@ Upgrades cannot silently change the compositor/Qt version. The installer uses in
 2. In **Movement**, choose a movement style, interval and window limit. Per-display overrides are optional.
 3. Select **Preview safe moves** to inspect the proposal. Start movement guarding and choose **Move after warning** for an immediate cycle, or wait for the scheduled check.
 4. In **Dimming**, select displays and enable the desired effects. Start brightness guarding separately.
-5. In **Safety & alerts**, configure warning length, interaction grace, app movement exclusions, launch at login, minimized startup and resume after unlock or wake.
+5. In **Safety & alerts**, configure warning length and position, interaction grace, app movement exclusions, launch at login, minimized startup and resume after unlock or wake.
 
 The bottom-left lights show each guard separately: **green = active**, **grey = paused**, **amber = waiting or unavailable**. Text labels also identify the state. Closing the dashboard leaves the tray/controller running; **Quit** stops both guards and removes dimming.
 
@@ -224,7 +228,7 @@ python3 -m unittest discover -s tests/packaging
 
 `tests/integration/run_*.py` contains separate private-compositor and physical acceptance runners. They are not part of the unit-test commands above; read their prerequisites before running them. Some historical DNF/signing rehearsal runners require private development artifacts that are not included in this repository.
 
-See the [v1.0.8 review](docs/RELEASE_REVIEW_v1.0.8.md) and [v1.0.7 compatibility review](docs/RELEASE_REVIEW_v1.0.7.md) and [changelog](CHANGELOG.md) for release scope and validation.
+See the [v1.1.0 review](docs/RELEASE_REVIEW_v1.1.0.md) and [v1.0.7 compatibility review](docs/RELEASE_REVIEW_v1.0.7.md) and [changelog](CHANGELOG.md) for release scope and validation.
 
 ## License
 
