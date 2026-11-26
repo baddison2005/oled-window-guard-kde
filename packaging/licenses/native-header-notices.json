@@ -1,9 +1,21 @@
 {
-  "rpmSHA256": "ed6b332aa5aefa073783448607bb7cd524db3a28ff247ae507714b36749f36bc",
+  "builds": {
+    "44": {
+      "rpm": "kwin-devel-6.8.3-2.fc44.x86_64.rpm",
+      "sha256": "eeb4b806db4b19e7ed30dc81bb25e82cc83fcdef56ff4a59b01efef27545710a"
+    },
+    "45": {
+      "rpm": "kwin-devel-6.8.3-2.fc45.x86_64.rpm",
+      "sha256": "6927bd2d40e25a17099b3e89a804ed9ff97408af63b640d7984df443cd3c1c66"
+    }
+  },
   "headers": [
     {
       "header": "input.h",
-      "sha256": "9f6cbb0f4dbd9030694ac3d4c0475924b1cc50ba7397b56608d8eee12d52c2fb",
+      "sha256": {
+        "44": "9f6cbb0f4dbd9030694ac3d4c0475924b1cc50ba7397b56608d8eee12d52c2fb",
+        "45": "9f6cbb0f4dbd9030694ac3d4c0475924b1cc50ba7397b56608d8eee12d52c2fb"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 2013 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
         "SPDX-FileCopyrightText: 2018 Roman Gilg <subdiff@gmail.com>",
@@ -13,7 +25,10 @@
     },
     {
       "header": "input_event.h",
-      "sha256": "27287fee279ecc7a6eb352d2f1dffdb34b1f84ac3581cb5393fcb6902353b666",
+      "sha256": {
+        "44": "27287fee279ecc7a6eb352d2f1dffdb34b1f84ac3581cb5393fcb6902353b666",
+        "45": "27287fee279ecc7a6eb352d2f1dffdb34b1f84ac3581cb5393fcb6902353b666"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 2016 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
         "SPDX-License-Identifier: GPL-2.0-or-later"
@@ -21,7 +36,10 @@
     },
     {
       "header": "input_event_spy.h",
-      "sha256": "1804f762a80a0b592939c45a70b00d2ddfb84aba0bca213becb82c11d393d348",
+      "sha256": {
+        "44": "1804f762a80a0b592939c45a70b00d2ddfb84aba0bca213becb82c11d393d348",
+        "45": "1804f762a80a0b592939c45a70b00d2ddfb84aba0bca213becb82c11d393d348"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 2016 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
         "SPDX-License-Identifier: GPL-2.0-or-later"
@@ -29,7 +47,10 @@
     },
     {
       "header": "core/output.h",
-      "sha256": "e8fe835f24026fe2e90da7e5e0c9fd09de82e16418ac495f83bf832ebed5e036",
+      "sha256": {
+        "44": "254b42cceecdd582ac6102b988f538819d58b5dd31031ff981ce3481e89bee39",
+        "45": "254b42cceecdd582ac6102b988f538819d58b5dd31031ff981ce3481e89bee39"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 2019 Roman Gilg <subdiff@gmail.com>",
         "SPDX-License-Identifier: GPL-2.0-or-later"
@@ -37,7 +58,10 @@
     },
     {
       "header": "core/session.h",
-      "sha256": "543c390009d3d98a8501c3e51f1b8222b948a99fd00621e7179050a355ef2083",
+      "sha256": {
+        "44": "543c390009d3d98a8501c3e51f1b8222b948a99fd00621e7179050a355ef2083",
+        "45": "543c390009d3d98a8501c3e51f1b8222b948a99fd00621e7179050a355ef2083"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 2020 Vlad Zahorodnii <vlad.zahorodnii@kde.org>",
         "SPDX-License-Identifier: GPL-2.0-or-later"
@@ -45,7 +69,10 @@
     },
     {
       "header": "effect/effecthandler.h",
-      "sha256": "4a4bb1dcafbd6d117b0471307cd3ac6077f67316d7c11713fa0d99bbe2f981eb",
+      "sha256": {
+        "44": "4a4bb1dcafbd6d117b0471307cd3ac6077f67316d7c11713fa0d99bbe2f981eb",
+        "45": "4a4bb1dcafbd6d117b0471307cd3ac6077f67316d7c11713fa0d99bbe2f981eb"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 2006 Lubos Lunak <l.lunak@kde.org>",
         "SPDX-FileCopyrightText: 2009 Lucas Murray <lmurray@undefinedfire.com>",
@@ -56,7 +83,10 @@
     },
     {
       "header": "main.h",
-      "sha256": "f993be1f421969d2d9a4f1d701a727ccbbfb391efb93a3c2c5b51453d5ecff3c",
+      "sha256": {
+        "44": "d3792d44e3fb5c3fd254d45e6785fe7713aaac1ab7dbadc5d9dff3dbbb8b8344",
+        "45": "d3792d44e3fb5c3fd254d45e6785fe7713aaac1ab7dbadc5d9dff3dbbb8b8344"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 1999, 2000 Matthias Ettrich <ettrich@kde.org>",
         "SPDX-FileCopyrightText: 2003 Lubos Lunak <l.lunak@kde.org>",
@@ -65,7 +95,10 @@
     },
     {
       "header": "workspace.h",
-      "sha256": "975e2f05e8700c2ca097f10327ba8c244719395e013cb0fdd7d33fbc1a3131ce",
+      "sha256": {
+        "44": "e3456d504100dc089d76f9c275971670ba9be4b1797ff5e7081b1e1b44305683",
+        "45": "e3456d504100dc089d76f9c275971670ba9be4b1797ff5e7081b1e1b44305683"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 1999, 2000 Matthias Ettrich <ettrich@kde.org>",
         "SPDX-FileCopyrightText: 2003 Lubos Lunak <l.lunak@kde.org>",
@@ -77,7 +110,10 @@
     },
     {
       "header": "window.h",
-      "sha256": "0cc424bd3c4b31c0901f6666b8a69a94bdf15089022cfa9a4ed41dc85af26597",
+      "sha256": {
+        "44": "0cc424bd3c4b31c0901f6666b8a69a94bdf15089022cfa9a4ed41dc85af26597",
+        "45": "0cc424bd3c4b31c0901f6666b8a69a94bdf15089022cfa9a4ed41dc85af26597"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 2015 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
         "SPDX-FileCopyrightText: 2019 Vlad Zahorodnii <vlad.zahorodnii@kde.org>",
@@ -86,7 +122,10 @@
     },
     {
       "header": "pointer_input.h",
-      "sha256": "e24867cbf901f1bf6e4e75052b326f0846e25c04727074c20469edcadda741e7",
+      "sha256": {
+        "44": "e24867cbf901f1bf6e4e75052b326f0846e25c04727074c20469edcadda741e7",
+        "45": "e24867cbf901f1bf6e4e75052b326f0846e25c04727074c20469edcadda741e7"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 2013, 2016 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
         "SPDX-FileCopyrightText: 2018 Roman Gilg <subdiff@gmail.com>",
@@ -96,7 +135,10 @@
     },
     {
       "header": "keyboard_input.h",
-      "sha256": "01f7a5d2d039402840d007a3923aecb66272373d640745b86f35762efe9fdd47",
+      "sha256": {
+        "44": "01f7a5d2d039402840d007a3923aecb66272373d640745b86f35762efe9fdd47",
+        "45": "01f7a5d2d039402840d007a3923aecb66272373d640745b86f35762efe9fdd47"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 2013, 2016 Martin Gr\u00e4\u00dflin <mgraesslin@kde.org>",
         "SPDX-License-Identifier: GPL-2.0-or-later"
@@ -104,7 +146,10 @@
     },
     {
       "header": "internalwindow.h",
-      "sha256": "cad937a63dde7dbe9d2984b6e40dacc0de003c90c5b22b4e614b1ef020940dcb",
+      "sha256": {
+        "44": "cad937a63dde7dbe9d2984b6e40dacc0de003c90c5b22b4e614b1ef020940dcb",
+        "45": "cad937a63dde7dbe9d2984b6e40dacc0de003c90c5b22b4e614b1ef020940dcb"
+      },
       "notices": [
         "SPDX-FileCopyrightText: 2019 Martin Fl\u00f6ser <mgraesslin@kde.org>",
         "SPDX-FileCopyrightText: 2019 Vlad Zahorodnii <vlad.zahorodnii@kde.org>",
@@ -113,7 +158,10 @@
     },
     {
       "header": "config-kwin.h",
-      "sha256": "7b754d53fcbba060424dcec292968cb39040b4781bb02c5d9e8e22d9ad0af67b",
+      "sha256": {
+        "44": "d0c24a7831c542404cbec618a97470921b60cd659db5ea2b4eae403d08506a94",
+        "45": "d0c24a7831c542404cbec618a97470921b60cd659db5ea2b4eae403d08506a94"
+      },
       "notices": []
     }
   ]

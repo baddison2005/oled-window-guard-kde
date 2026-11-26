@@ -1,4 +1,4 @@
-"""Read-only diagnostics for the one Fedora/KWin matrix exercised so far."""
+"""Read-only diagnostics for the supported KWin and Qt versions."""
 from __future__ import annotations
 
 import shutil
@@ -7,7 +7,7 @@ from typing import Callable, Sequence
 
 from PySide6.QtCore import qVersion
 
-TESTED_VERSIONS = {"kwin": "6.8.2", "plasma-workspace": "6.8.2",
+TESTED_VERSIONS = {"kwin": "6.8.3", "plasma-workspace": "6.8.3",
                    "python3-pyside6": "6.11.2"}
 REQUIRED_COMMANDS = ("kpackagetool6", "kreadconfig6", "rpm")
 

@@ -149,7 +149,7 @@ def worker(root):
                 url=f'{REPOSITORY}/releases/download/v{version}/{name}',size=(staged/name).stat().st_size,
                 sha256=hashlib.sha256((staged/name).read_bytes()).hexdigest())))
             def query(argv):
-                if argv==['rpm','-q','--qf','%{VERSION}-%{RELEASE}',PACKAGE]:return '0.0.0-1.fc44'
+                if argv==['rpm','-q','--qf','%{VERSION}-%{RELEASE}',PACKAGE]:return f'0.0.0-{release}'
                 return _run(argv)
             def reopen_cancelled(folder):
                 nonlocal dashboard

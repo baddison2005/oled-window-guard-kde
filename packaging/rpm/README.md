@@ -2,7 +2,7 @@
 
 The RPM includes the Python/Qt dashboard, settings schema, desktop entry, icon,
 warning sound and KWin package with its passive native observer. Test injectors
-are not installed. Native builds target KWin 6.8.2 and Qt 6.11.2, while runtime
+are not installed. Native builds target KWin 6.8.3 and Qt 6.11.2, while runtime
 dependencies do not pin desktop package versions. Before importing the optional
 native plugin, the loader checks the running compositor's KWin and Qt versions
 through D-Bus supportInformation. Unknown or mismatched versions leave guarding
@@ -13,13 +13,15 @@ Python/PySide6 are provided by the system. The app starts paused and login start
 is opt-in.
 
 Install the matching development dependencies listed in [SOURCE.md](../../SOURCE.md),
-plus `rpm-build`, then build from the source root:
+plus `rpm-build`, then build from the source root. Run the build separately in
+Fedora 44 and Fedora 45 environments so the RPM uses the matching libraries
+and distribution macros.
 
 ```sh
+owg_source=$PWD
 rpm_top=$(mktemp -d /tmp/owg-rpm.XXXXXX)
 mkdir -p "$rpm_top"/{SOURCES,SPECS,BUILD,BUILDROOT,RPMS,SRPMS,tmp}
-python3 packaging/rpm/make-source.py
-cp oled-window-guard-1.0.6.tar.gz "$rpm_top/SOURCES/"
+(cd "$rpm_top/SOURCES" && python3 "$owg_source/packaging/rpm/make-source.py")
 rpmbuild -ba --define "_topdir $rpm_top" --define "_tmppath $rpm_top/tmp" packaging/rpm/oled-window-guard.spec
 ```
 
@@ -37,7 +39,7 @@ private lifecycle development; official builds compile it afresh.
 
 The original KDE implementation is GPL-3.0-or-later; shared schema and protocols
 are MIT. The package includes full notices. See [source instructions](../../SOURCE.md).
-The v1.0.2 RPM is unsigned; the GitHub release provides SHA-256 checksums and
+The release RPMs are unsigned. The GitHub release provides SHA-256 checksums and
 corresponding source. No signing rehearsal key is used as a release identity.
 
 Private RPM runtime validation uses an extracted payload and isolated KWin:

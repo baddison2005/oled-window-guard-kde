@@ -612,9 +612,9 @@ class Dashboard(QMainWindow):
 
     def _build_about(self) -> None:
         layout = self._page("About", "Keep your windows moving.\nCare for your OLED.")
-        form = self._card(layout, "OLED Window Guard 1.1.0 · Dr. Brett Addison")
+        form = self._card(layout, "OLED Window Guard 1.2.0 · Dr. Brett Addison")
         self.about_text = self._help(form, "Guarded movement and software dimming for your desktop. Original KDE implementation: GNU GPL version 3 or later. Shared schema and interfaces: MIT. Third-party components retain their own licences.")
-        self._help(form, "OWG is provided without warranty. It cannot guarantee prevention of image retention or burn-in. The supported package targets Fedora 44, KWin 6.8.2 and Qt 6.11.2. Enable Resume guarding after unlock or wake in Safety & alerts to continue previously active guarding after a session interruption.")
+        self._help(form, "OWG is provided without warranty. It cannot guarantee prevention of image retention or burn-in. Packages are available for Fedora 44 and 45 with KWin 6.8.3 and Qt 6.11.2. Enable Resume guarding after unlock or wake in Safety & alerts to continue previously active guarding after a session interruption.")
         self.package_update_label = self._help(form, "")
         self.check_updates_button = QPushButton("Check for updates")
         self.check_updates_button.clicked.connect(lambda: self.refresh_package_status(check_github=True))

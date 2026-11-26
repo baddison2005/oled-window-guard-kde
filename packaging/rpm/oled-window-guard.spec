@@ -3,6 +3,8 @@
 %global app_id oled-window-guard
 %global app_root %{_libexecdir}/oled-window-guard
 %global kpackage_id oled-window-guard-adapter
+%global owg_kwin_version 6.8.3
+%global owg_qt_version 6.11.2
 # This optional, preflight-gated plugin must not keep an obsolete KWin SONAME
 # installed after a future desktop ABI transition. Runtime packages are explicit.
 %global __requires_exclude_from ^%{_datadir}/kwin/scripts/%{kpackage_id}/.*libowg_native_observer\.so$
@@ -10,7 +12,7 @@
 %{!?owg_native_prefix:%global owg_native_prefix /usr}
 
 Name:           oled-window-guard
-Version:        1.1.0
+Version:        1.2.0
 Release:        %{?owg_release}%{!?owg_release:1}%{?dist}
 Summary:        Window movement and software dimming for KDE Plasma
 License:        GPL-3.0-or-later AND MIT
@@ -18,9 +20,9 @@ Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  python3
 %if !%{defined owg_native_module}
 BuildRequires:  gcc-c++
-BuildRequires:  kwin-devel = 6.8.2
-BuildRequires:  qt6-qtbase-devel = 6.11.2
-BuildRequires:  qt6-qtdeclarative-devel = 6.11.2
+BuildRequires:  kwin-devel = %{owg_kwin_version}
+BuildRequires:  qt6-qtbase-devel = %{owg_qt_version}
+BuildRequires:  qt6-qtdeclarative-devel = %{owg_qt_version}
 BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  libepoxy-devel
 BuildRequires:  pixman-devel
@@ -46,8 +48,8 @@ Requires:       kf6-kcoreaddons
 Requires:       plasma-integration
 # Build-target declarations inform the updater without constraining the system
 # packages. Unknown future ABIs are refused before the native ELF is imported.
-Provides:       oled-window-guard-native-kwin = 6.8.2
-Provides:       oled-window-guard-native-qt = 6.11.2
+Provides:       oled-window-guard-native-kwin = %{owg_kwin_version}
+Provides:       oled-window-guard-native-qt = %{owg_qt_version}
 
 %description
 OLED Window Guard provides a desktop dashboard and guarded KWin window
@@ -101,7 +103,7 @@ paths=list(package.rglob("build-info.json"))
 assert len(paths)==2, "canonical and immutable native metadata required"
 for path in paths:
     info=json.loads(path.read_text())
-    assert info["kwinVersion"]=="6.8.2" and info["qtVersion"]=="6.11.2"
+    assert info["kwinVersion"]=="%{owg_kwin_version}" and info["qtVersion"]=="%{owg_qt_version}"
     binaries=list(path.parent.rglob("libowg_native_observer.so"))
     assert len(binaries)==1
     info["unstrippedPluginSHA256"]=info.get("unstrippedPluginSHA256",info["pluginSHA256"])
@@ -126,6 +128,10 @@ fi
 %{_datadir}/kwin/scripts/%{kpackage_id}/
 
 %changelog
+* Thu Nov 26 2026 Dr. Brett Addison - 1.2.0-1
+- Build Fedora 44 and 45 packages for KWin 6.8.3 and Qt 6.11.2
+- Select and verify the matching Fedora RPM during in-app upgrades
+
 * Thu Nov 12 2026 Dr. Brett Addison - 1.1.0-1
 - Add fixed and random top-quarter warning placement in Safety & alerts
 - Apply placement to movement and Restore with confirmed, stable geometry

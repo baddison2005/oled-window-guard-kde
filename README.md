@@ -6,7 +6,11 @@ OLED Window Guard automatically shifts and rearranges application windows and di
 
 Created by **Dr. Brett Addison**. This is the KDE Plasma edition; the [macOS edition](https://github.com/baddison2005/oled-window-guard) is maintained separately.
 
-## v1.1.0: Warning dialog placement
+## v1.2.0 supports Fedora 44 and 45
+
+Both Fedora builds target KWin/Plasma 6.8.3 and Qt/PySide6 6.11.2. The in-app updater selects the RPM for your Fedora release. If you upgraded Fedora 44 to 45 with OWG v1.1.0 installed, use the Fedora 45 RPM for the first update.
+
+## v1.1.0 warning dialog placement
 
 In **Safety & alerts → Warning dialog position**, choose **Top left**, **Top centre**, **Top right** or **Random within top 25%**. The choice applies to movement and Restore warnings on the affected monitor. Random placement chooses a new location for each warning, then stays still throughout the countdown. It keeps the whole dialog within the top quarter where it fits, respects the work area reserved for panels/docks, and falls back to the top edge with horizontal variation on short displays. Existing settings keep the previous top-centre default.
 
@@ -120,24 +124,22 @@ Check the installed package and GitHub for a newer compatible release.
 
 ## Supported system
 
-The v1.1.0 RPM targets **Fedora 44, x86_64, KDE Plasma Wayland, KWin 6.8.2 and Qt/PySide6 6.11.2**. Python 3.11 or newer is required.
+The v1.2.0 RPMs target **Fedora 44 and 45 on x86_64**, with KDE Plasma Wayland, KWin/Plasma 6.8.3 and Qt/PySide6 6.11.2. Python 3.11 or newer is required.
 
 The native observer uses version-specific KWin interfaces. Runtime RPM dependencies permit desktop updates; OWG checks compatibility before importing its native plugin and leaves guarding unavailable on unverified KWin/Qt versions until a matching OWG build is installed. This is not a generic package for every Plasma release or distribution. XWayland application windows are supported inside the tested Wayland session; an X11 desktop session is not supported.
 
 ## Install
 
-1. Download `oled-window-guard-1.1.0-1.fc44.x86_64.rpm` and `SHA256SUMS` from [v1.1.0](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.1.0).
-2. In the download directory, verify the RPM checksum against `SHA256SUMS`:
+1. Download the RPM for your system and `SHA256SUMS` from [v1.2.0](https://github.com/baddison2005/oled-window-guard-kde/releases/tag/v1.2.0).
+
+   - Fedora 44 uses `oled-window-guard-1.2.0-1.fc44.x86_64.rpm`.
+   - Fedora 45 uses `oled-window-guard-1.2.0-1.fc45.x86_64.rpm`.
+
+2. In the download directory, run `sha256sum --ignore-missing --check SHA256SUMS` and confirm that the downloaded RPM reports `OK`.
+3. Quit any open OWG session, then install the downloaded RPM. For Fedora 45, run the following command. Use `fc44` in the filename for Fedora 44.
 
    ```sh
-   sha256sum oled-window-guard-1.1.0-1.fc44.x86_64.rpm
-   ```
-
-3. Quit an existing OWG session, then install:
-
-   ```sh
-   oled-window-guard quit  # Only needed if OWG is already running.
-   sudo dnf install ./oled-window-guard-1.1.0-1.fc44.x86_64.rpm
+   sudo dnf install ./oled-window-guard-1.2.0-1.fc45.x86_64.rpm
    ```
 
 4. Open **OLED Window Guard** from the application launcher, or run `oled-window-guard open`.
@@ -148,9 +150,9 @@ For an upgrade, quit OWG before installing the new RPM. If you previously instal
 
 ## In-app upgrades
 
-**About → Check for updates** queries the official GitHub repository only when requested. A newer Fedora 44 x86_64 RPM shows **Download and upgrade**. A failed/offline check is reported as an error rather than as “up to date.” Checking alone does not download an RPM or install anything.
+**About → Check for updates** queries the official GitHub repository on request. A newer x86_64 RPM for the running Fedora release shows **Download and upgrade**. A failed check reports an error.
 
-For the emergency upgrade from v1.0.6 or earlier (including the local recovery revision), install the latest downloaded RPM using the DNF command above. The older updater expects pinned runtime requirements and cannot validate this new package format. If KDE is still on an older version, OWG will remain paused/unavailable until KDE is updated to the supported matrix.
+On Fedora 45, upgrading from OWG v1.1.0 or earlier requires the manual installation steps above. On Fedora 44, use those steps if upgrading from v1.0.6 or earlier. The package upgrade preserves your settings.
 
 Confirm the upgrade to download it. OWG verifies GitHub's SHA-256 asset digest, the RPM name/version/architecture and its native KWin/Qt build-target declarations before closing. The session helper closes the existing controller and unloads its compositor runtime, then DNF requests administrator authorization. Settings and login preferences are backed up and retained. The app reopens paused, including after cancelled authorization or an installation failure. The reopened About page reports the result. Failed download or preflight checks leave the running app in place.
 
@@ -228,7 +230,7 @@ python3 -m unittest discover -s tests/packaging
 
 `tests/integration/run_*.py` contains separate private-compositor and physical acceptance runners. They are not part of the unit-test commands above; read their prerequisites before running them. Some historical DNF/signing rehearsal runners require private development artifacts that are not included in this repository.
 
-See the [v1.1.0 review](docs/RELEASE_REVIEW_v1.1.0.md) and [v1.0.7 compatibility review](docs/RELEASE_REVIEW_v1.0.7.md) and [changelog](CHANGELOG.md) for release scope and validation.
+See the [v1.2.0 release review](docs/RELEASE_REVIEW_v1.2.0.md) and [changelog](CHANGELOG.md) for release scope and validation.
 
 ## License
 

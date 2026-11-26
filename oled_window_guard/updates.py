@@ -17,8 +17,11 @@ PACKAGE = 'oled-window-guard'
 REPOSITORY = 'https://github.com/baddison2005/oled-window-guard-kde'
 LATEST_API = 'https://api.github.com/repos/baddison2005/oled-window-guard-kde/releases/latest'
 MAX_RPM_BYTES = 64 * 1024 * 1024
+SUPPORTED_FEDORA = ('44', '45')
 VERSION = r'(?:0|[1-9][0-9]{0,5})\.(?:0|[1-9][0-9]{0,5})\.(?:0|[1-9][0-9]{0,5})'
-EVR = re.compile(rf'({VERSION})-([1-9][0-9]{{0,5}}\.fc44)\Z')
+RPM_REVISION = r'[1-9][0-9]{0,5}'
+RPM_RELEASE = rf'{RPM_REVISION}\.fc(?:{"|".join(SUPPORTED_FEDORA)})'
+EVR = re.compile(rf'({VERSION})-({RPM_RELEASE})\Z')
 
 
 def _run(argv: Sequence[str]) -> str:
@@ -67,12 +70,20 @@ def fetch_latest():
     return json.loads(data)
 
 
+def fedora_release(*, machine=None, os_release=None):
+    system = platform.freedesktop_os_release() if os_release is None else os_release
+    release = system.get('VERSION_ID')
+    if (machine or platform.machine()) != 'x86_64' or system.get('ID') != 'fedora' or release not in SUPPORTED_FEDORA:
+        raise ValueError('In-app upgrades support Fedora 44 and 45 on x86_64')
+    return release
+
+
 def validate_offer(offer):
     if not isinstance(offer, dict) or set(offer) != {'version', 'release', 'name', 'url', 'sha256', 'size'}:
         raise ValueError('Invalid upgrade offer')
     if not isinstance(offer['version'], str) or not re.fullmatch(VERSION, offer['version']):
         raise ValueError('Invalid release version')
-    if not isinstance(offer['release'], str) or not re.fullmatch(r'[1-9][0-9]{0,5}\.fc44', offer['release']):
+    if not isinstance(offer['release'], str) or not re.fullmatch(RPM_RELEASE, offer['release']):
         raise ValueError('Unsupported RPM release')
     name = f"{PACKAGE}-{offer['version']}-{offer['release']}.x86_64.rpm"
     if offer['name'] != name or offer['url'] != f"{REPOSITORY}/releases/download/v{offer['version']}/{name}":
@@ -82,6 +93,14 @@ def validate_offer(offer):
     if type(offer['size']) is not int or not 0 < offer['size'] <= MAX_RPM_BYTES:
         raise ValueError('Invalid RPM download size')
     return dict(offer)
+
+
+def validate_local_offer(offer):
+    offer = validate_offer(offer)
+    release = fedora_release()
+    if offer['release'].rsplit('.fc', 1)[1] != release:
+        raise ValueError(f'This RPM is for a different Fedora release. Select the Fedora {release} RPM.')
+    return offer
 
 
 def newer(offer, installed):
@@ -97,9 +116,7 @@ def check_for_updates(*, runner=_run, fetch=fetch_latest, machine=None, os_relea
     if not result['installed']:
         return result
     try:
-        system = platform.freedesktop_os_release() if os_release is None else os_release
-        if (machine or platform.machine()) != 'x86_64' or system.get('ID') != 'fedora' or system.get('VERSION_ID') != '44':
-            raise ValueError('In-app upgrades currently support Fedora 44 x86_64 only')
+        fedora = fedora_release(machine=machine, os_release=os_release)
         release = fetch()
         if (not isinstance(release, dict) or release.get('draft') is not False
                 or release.get('prerelease') is not False or not isinstance(release.get('tag_name'), str)
@@ -109,18 +126,19 @@ def check_for_updates(*, runner=_run, fetch=fetch_latest, machine=None, os_relea
         assets = release.get('assets')
         if not isinstance(assets, list) or len(assets) > 128:
             raise ValueError('Invalid release assets')
+        asset_pattern = re.compile(rf'{PACKAGE}-{re.escape(version)}-({RPM_REVISION}\.fc{fedora})\.x86_64\.rpm')
         candidates = []
         for asset in assets:
             if not isinstance(asset, dict) or not isinstance(asset.get('name'), str):
                 continue
-            match = re.fullmatch(re.escape(f'{PACKAGE}-{version}-') + r'([1-9][0-9]{0,5}\.fc44)\.x86_64\.rpm', asset['name'])
+            match = asset_pattern.fullmatch(asset['name'])
             if match:
                 digest = asset.get('digest')
                 candidates.append(validate_offer(dict(version=version, release=match[1], name=asset['name'],
                     url=asset.get('browser_download_url'), sha256=digest[7:] if isinstance(digest, str) and digest.startswith('sha256:') else None,
                     size=asset.get('size'))))
         if len(candidates) != 1:
-            raise ValueError('This release has no single compatible Fedora 44 x86_64 RPM')
+            raise ValueError(f'This release has no single compatible Fedora {fedora} x86_64 RPM')
         offer = candidates[0]
         available = newer(offer, result['version'])
         result.update(state='available' if available else 'current', latestVersion=version,
@@ -140,7 +158,7 @@ def validate_rpm(folder, *, runner=_run):
     metadata = folder / 'offer.json'
     if metadata.is_symlink() or metadata.stat().st_size > 4096:
         raise ValueError('Invalid staged upgrade metadata')
-    offer = validate_offer(json.loads(metadata.read_text()))
+    offer = validate_local_offer(json.loads(metadata.read_text()))
     path = folder / offer['name']
     if path.is_symlink() or not path.is_file() or path.stat().st_size != offer['size']:
         raise ValueError('RPM download size changed')
@@ -165,7 +183,7 @@ def validate_rpm(folder, *, runner=_run):
 
 
 def download_update(offer, *, opener=_open, runner=_run, cancel=None):
-    offer = validate_offer(offer)
+    offer = validate_local_offer(offer)
     folder = Path(tempfile.mkdtemp(prefix='owg-upgrade-'))
     try:
         target = folder / offer['name']

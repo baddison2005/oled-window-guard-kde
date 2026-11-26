@@ -13,8 +13,11 @@ class RuntimeRequirementsTests(unittest.TestCase):
         for name in ('kwin','qt6-qtbase','qt6-qtdeclarative'):
             self.assertIn(name,requirements)
             self.assertFalse(any(line.startswith(name+' ') for line in requirements))
-        self.assertIn('Provides:       oled-window-guard-native-kwin = '+TESTED_VERSIONS['kwin'],source)
-        self.assertIn('Provides:       oled-window-guard-native-qt = 6.11.2',source)
+        versions = dict(re.findall(r'^%global (owg_(?:kwin|qt)_version) (\S+)$', source, re.M))
+        self.assertEqual(versions['owg_kwin_version'], TESTED_VERSIONS['kwin'])
+        self.assertEqual(versions['owg_qt_version'], TESTED_VERSIONS['python3-pyside6'])
+        self.assertIn('Provides:       oled-window-guard-native-kwin = %{owg_kwin_version}', source)
+        self.assertIn('Provides:       oled-window-guard-native-qt = %{owg_qt_version}', source)
         self.assertIn('%global __requires_exclude_from',source)
         self.assertIn('%global __provides_exclude_from',source)
 

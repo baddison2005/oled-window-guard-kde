@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 — 2026-11-26
+
+- Publish separate Fedora 44 and 45 RPMs from the same source. Both target KWin/Plasma 6.8.3 and Qt/PySide6 6.11.2.
+- Select updates for the running Fedora release and verify the Fedora target before download and installation.
+- Update the About page and dependency diagnostics for the supported desktop versions.
+
 ## 1.1.0 — 2026-11-12
 
 - Add Warning dialog position under Safety & alerts: Top left, Top centre, Top right and Random within top 25%.

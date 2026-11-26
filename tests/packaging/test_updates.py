@@ -20,10 +20,14 @@ class UpdateStatusTests(unittest.TestCase):
             url=U.REPOSITORY + '/releases/download/v1.0.2/oled-window-guard-1.0.2-1.fc44.x86_64.rpm',
             sha256=hashlib.sha256(self.data).hexdigest(), size=len(self.data))
         self.current = '1.0.0-1.fc44'
+        self.system = {'ID': 'fedora', 'VERSION_ID': '44'}
+        os_release = patch.object(U.platform, 'freedesktop_os_release', return_value=self.system)
+        os_release.start()
+        self.addCleanup(os_release.stop)
 
     def runner(self, argv):
         if argv[:3] == ['rpm', '-qp', '--qf']:
-            return '\n'.join([U.PACKAGE, '1.0.2', '1.fc44', 'x86_64', '0'])
+            return '\n'.join([U.PACKAGE, self.offer['version'], self.offer['release'], 'x86_64', '0'])
         if argv[:3] == ['rpm', '-qp', '--requires']:
             return 'kwin = 6.7.5\nqt6-qtbase = 6.11.2\nqt6-qtdeclarative = 6.11.2'
         if argv[:3] == ['rpm', '-qp', '--provides']:
@@ -42,7 +46,7 @@ class UpdateStatusTests(unittest.TestCase):
 
     def check(self, release=None, **kwargs):
         return U.check_for_updates(runner=self.runner, fetch=lambda: release or self.release(), machine='x86_64',
-            os_release={'ID': 'fedora', 'VERSION_ID': '44'}, **kwargs)
+            os_release=self.system, **kwargs)
 
     def stage(self, path):
         path.chmod(0o700)
@@ -93,6 +97,35 @@ class UpdateStatusTests(unittest.TestCase):
         for url in ('http://github.com/a', 'https://github.com.evil.invalid/a', 'https://user@github.com/a',
                     'https://github.com:8443/a', 'file:///tmp/a'):
             with self.assertRaises(ValueError): U.check_https_url(url)
+
+    def test_release_with_both_assets_selects_the_host_version(self):
+        fedora44 = self.release()['assets'][0]
+        fedora45 = dict(fedora44, name=fedora44['name'].replace('fc44', 'fc45'),
+                        browser_download_url=fedora44['browser_download_url'].replace('fc44', 'fc45'))
+        release = self.release(assets=[fedora45, fedora44])
+        self.assertEqual(self.check(release)['offer']['name'], fedora44['name'])
+        self.system['VERSION_ID'] = '45'
+        self.assertEqual(self.check(release)['offer']['name'], fedora45['name'])
+        self.assertEqual(self.check(self.release(assets=[fedora44]))['state'], 'error')
+        self.system['VERSION_ID'] = '46'
+        self.assertEqual(self.check(release)['state'], 'error')
+
+    def test_wrong_fedora_rpm_is_refused_before_download_or_install(self):
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            self.stage(folder)
+            self.system['VERSION_ID'] = '45'
+            with self.assertRaisesRegex(ValueError, 'different Fedora release'):
+                U.validate_rpm(folder, runner=self.runner)
+            with self.assertRaisesRegex(ValueError, 'different Fedora release'):
+                U.download_update(self.offer, opener=lambda _: self.fail('must not download'), runner=self.runner)
+            self.offer.update(
+                release='1.fc45',
+                name=self.offer['name'].replace('fc44', 'fc45'),
+                url=self.offer['url'].replace('fc44', 'fc45'),
+            )
+            self.stage(folder)
+            self.assertEqual(U.validate_rpm(folder, runner=self.runner)[0], self.offer)
 
     def test_verified_download_and_cleanup_of_corrupt_or_cancelled_download(self):
         folder = U.download_update(self.offer, opener=lambda _: io.BytesIO(self.data), runner=self.runner)
